@@ -38,10 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include <vector>
-using namespace std;
-
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
+#include "edu_cmu_cs_speech_tts_Common.hh"
 
 namespace FliteEngine {
   
@@ -90,41 +88,51 @@ namespace FliteEngine {
     return fliteVoice;
   }
 
-  Voices::Voices(int fregistrationMode)
+  Voices::Voices(int fmaxCount, int fregistrationMode)
   {
     rMode = fregistrationMode;
     currentVoice = NULL;
+    voiceList = new Voice*[fmaxCount];
+    maxCount = fmaxCount;
+    currentCount = 0;
   }
 
   Voices::~Voices()
   {
-    /* Items in the voiceList vector will be destroyed automatically
-       and unregistered in their destructors,
-       so we don't really have to do anything here
-    */
+    for(int i=0;i<currentCount;i++)
+      delete voiceList[i]; // Delete the individual voices
+    delete voiceList;
   }
 
   void Voices::addVoice(String flang, String fcountry, String fvar, 
 			t_voice_register_function freg,
 			t_voice_unregister_function funreg)
   {
-    Voice v = Voice(flang, fcountry, fvar, freg, funreg);
+
+    if(currentCount==maxCount)
+      {
+	LOGE("Could not add voice %s_%s_%s. Too many voices",
+	     flang.c_str(),fcountry.c_str(), fvar.c_str());
+	return;
+      }
+    
+    Voice* v = new Voice(flang, fcountry, fvar, freg, funreg);
     
     /* We must register this voice if the registration mode
        so dictates.
     */
 
     if(rMode == ALL_VOICES_REGISTERED)
-      v.registerVoice();
-    voiceList.push_back(v);
+      v->registerVoice();
 
+    voiceList[currentCount] = v;
+    currentCount++;
   }
 
   bool Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
   {
-    vector<Voice>::iterator it;
-    for(it=voiceList.begin(); it<voiceList.end();it++)
-      if(it->isSameLocaleAs(flang, fcountry, fvar))
+    for(int i=0; i<currentCount;i++)
+      if(voiceList[i]->isSameLocaleAs(flang, fcountry, fvar))
 	{
 	  return true;
 	}
@@ -134,36 +142,40 @@ namespace FliteEngine {
   cst_voice* Voices::getFliteVoiceForLocale(String flang, 
 					    String fcountry, String fvar)
   {
-    vector<Voice>::iterator it;  
-    for(it=voiceList.begin(); it<voiceList.end();it++)
-      if(it->isSameLocaleAs(flang, fcountry, fvar))
-	{
-	  if(rMode == ALL_VOICES_REGISTERED)
-	    {
-	      currentVoice = it;
-	      return currentVoice->fliteVoice;
-	    }
-	  else
-	    {
-	      /* Only one voice can be registered.
-		 Check that the one that the user wants
-		 isn't already the current voice.
-		 Otherwise, unregister current one
-		 and then register and set the requested one
-	      */
-	      if(it == currentVoice)
-		{
-		  return currentVoice->fliteVoice;
-		}
-	      else
-		{
-		  currentVoice->unregisterVoice();
-		  currentVoice = it;
-		  return currentVoice->registerVoice();
-		}
-
-	}
+    Voice* ptr;
+    for(int i=0; i<currentCount;i++)
+      {
+	ptr = voiceList[i];
+	if(ptr->isSameLocaleAs(flang, fcountry, fvar))
+	  {
+	    if(rMode == ALL_VOICES_REGISTERED)
+	      {
+		currentVoice = ptr;
+		return currentVoice->getFliteVoice();
+	      }
+	    else
+	      {
+		/* Only one voice can be registered.
+		   Check that the one that the user wants
+		   isn't already the current voice.
+		   Otherwise, unregister current one
+		   and then register and set the requested one
+		*/
+		if(ptr == currentVoice)
+		  {
+		    return currentVoice->getFliteVoice();
+		  }
+		else
+		  {
+		    currentVoice->unregisterVoice();
+		    currentVoice = ptr;
+		    return currentVoice->registerVoice();
+		  }
+		
+	      }
+	  }
+      }
     currentVoice = NULL; // Requested voice not available!
-    return currentVoice;
+    return NULL;
   }
 }
