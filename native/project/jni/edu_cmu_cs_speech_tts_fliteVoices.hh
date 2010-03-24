@@ -101,6 +101,8 @@ namespace FliteEngine {
     Voices(int fmaxCount,int fregistrationMode);
     ~Voices();
 
+    cst_voice* getCurrentFliteVoice();
+
     void addVoice(String flang, String fcountry, String fvar, 
 		  t_voice_register_function freg,
 		  t_voice_unregister_function funreg);

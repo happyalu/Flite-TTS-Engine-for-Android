@@ -104,6 +104,13 @@ namespace FliteEngine {
     delete voiceList;
   }
 
+  cst_voice* Voices::getCurrentFliteVoice()
+  {
+    if(currentVoice == NULL)
+      return NULL;
+    return currentVoice->getFliteVoice();
+  }
+
   void Voices::addVoice(String flang, String fcountry, String fvar, 
 			t_voice_register_function freg,
 			t_voice_unregister_function funreg)
@@ -127,6 +134,8 @@ namespace FliteEngine {
 
     voiceList[currentCount] = v;
     currentCount++;
+    if(currentVoice == NULL)
+      currentVoice = v;
   }
 
   bool Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
