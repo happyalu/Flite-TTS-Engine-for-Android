@@ -1,0 +1,36 @@
+Android Application for Flite
+Author: Alok Parlikar <aup@cs.cmu.edu>
+Copyright 2010
+
+This directory contains the native code for FliteEngine. Flite Libraries are
+distributed in binary form here, but you can download flite from
+www.cmuflite.org and compile them again. 
+
+To compile this project, you need to build the native part first, then build
+the Java project.
+
+
+The native code part, which resides in Application.mk and project/...,
+must be built with the Android NDK:
+
+   unzip android-ndk.zip
+   cd android-ndk
+
+   cd apps
+   ln -s /path/to/FliteEngine/native ./FliteEngine
+   cd ..
+
+   ./build/host-setup.sh
+
+   make APP=FliteEngine
+
+This will generate a file
+
+   project/libs/armeabi/liblibttsfliteengine.so
+
+which should be copied to
+
+   libs/armeabi/libttsfliteengine.so
+
+The Java part, which resides in AndroidManifest.xml and in src/...,
+can be built using the ant script.
