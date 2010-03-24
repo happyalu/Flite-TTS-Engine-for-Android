@@ -105,7 +105,7 @@ namespace FliteEngine {
     Voices(int fmaxCount,int fregistrationMode);
     ~Voices();
 
-    cst_voice* getCurrentFliteVoice();
+    Voice* getCurrentVoice();
 
     void addVoice(String flang, String fcountry, String fvar, 
 		  t_voice_register_function freg,
@@ -115,7 +115,7 @@ namespace FliteEngine {
     bool isLocaleAvailable(String flang, String fcountry, String fvar);
 
     // Register and set the current voice to the one asked for
-    cst_voice* getFliteVoiceForLocale(String flang, String fcountry, String fvar);
+    Voice* getVoiceForLocale(String flang, String fcountry, String fvar);
   };  
 
 }

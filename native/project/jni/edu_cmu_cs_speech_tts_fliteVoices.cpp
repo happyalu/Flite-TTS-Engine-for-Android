@@ -120,11 +120,9 @@ namespace FliteEngine {
     delete voiceList;
   }
 
-  cst_voice* Voices::getCurrentFliteVoice()
+  Voice* Voices::getCurrentVoice()
   {
-    if(currentVoice == NULL)
-      return NULL;
-    return currentVoice->getFliteVoice();
+    return currentVoice;
   }
 
   void Voices::addVoice(String flang, String fcountry, String fvar, 
@@ -164,8 +162,8 @@ namespace FliteEngine {
     return false;
   }
 
-  cst_voice* Voices::getFliteVoiceForLocale(String flang, 
-					    String fcountry, String fvar)
+  Voice* Voices::getVoiceForLocale(String flang, 
+				   String fcountry, String fvar)
   {
     Voice* ptr;
     for(int i=0; i<currentCount;i++)
@@ -176,7 +174,7 @@ namespace FliteEngine {
 	    if(rMode == ALL_VOICES_REGISTERED)
 	      {
 		currentVoice = ptr;
-		return currentVoice->getFliteVoice();
+		return currentVoice;
 	      }
 	    else
 	      {
@@ -188,19 +186,20 @@ namespace FliteEngine {
 		*/
 		if(ptr == currentVoice)
 		  {
-		    return currentVoice->getFliteVoice();
+		    return currentVoice;
 		  }
 		else
 		  {
 		    currentVoice->unregisterVoice();
 		    currentVoice = ptr;
-		    return currentVoice->registerVoice();
+		    currentVoice->registerVoice();
+		    return currentVoice;
 		  }
 		
 	      }
 	  }
       }
     currentVoice = NULL; // Requested voice not available!
-    return NULL;
+    return currentVoice;
   }
 }
