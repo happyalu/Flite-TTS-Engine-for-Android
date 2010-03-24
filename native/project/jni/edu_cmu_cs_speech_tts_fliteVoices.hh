@@ -43,15 +43,14 @@
 
 #include <include/flite.h>
 
+#define voxdir_path "/sdcard/flite"
+
 namespace FliteEngine {
   // Function pointer type for flite_register_voice
   typedef cst_voice* (*t_voice_register_function)(const char*);
  
   // Function pointer type for flite_unregister_voice
   typedef void (*t_voice_unregister_function)(cst_voice*);
-
-  // FIXME: We need a better way to set path
-  const char* voxdir_path = "/sdcard/flite";
 
   class Voice {
   private:
