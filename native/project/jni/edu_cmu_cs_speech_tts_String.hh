@@ -38,6 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
+#ifndef __FliteEngine_String
+#define __FliteEngine_String
 #include<stdlib.h>
 
 namespace FliteEngine {
@@ -58,3 +60,4 @@ namespace FliteEngine {
   };
 
 }
+#endif

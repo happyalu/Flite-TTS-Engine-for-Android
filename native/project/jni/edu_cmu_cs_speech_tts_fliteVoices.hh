@@ -37,7 +37,8 @@
 /*  Library classes to manage available flite voices                     */
 /*                                                                       */
 /*************************************************************************/
-
+#ifndef __FliteEngine_Voices
+#define __FliteEngine_Voices
 #include "edu_cmu_cs_speech_tts_String.hh"
 
 #include <include/flite.h>
@@ -113,3 +114,4 @@ namespace FliteEngine {
   };  
 
 }
+#endif

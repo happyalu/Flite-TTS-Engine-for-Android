@@ -38,6 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
+#ifndef __FliteEngine_Common
+#define __FliteEngine_Common
 /* Set up Logging macros */
 #include <android/log.h>
 #define LOG_TAG "FliteEngine"
@@ -58,4 +60,5 @@
 #define LOGD(...)
 #define LODW(...)
 
+#endif
 #endif
