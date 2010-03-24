@@ -38,7 +38,7 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include <string>
+#include "edu_cmu_cs_speech_tts_String.hh"
 #include <vector>
 using namespace std;
 
@@ -93,9 +93,9 @@ namespace FliteEngine {
     Voice* currentVoice;
     int rMode; // Registration mode 
   public:
-    enum {
-      ONLY_ONE_VOICE_REGISTERED = 0;
-      ALL_VOICES_REGISTERED = 1;
+    static enum {
+      ONLY_ONE_VOICE_REGISTERED = 0,
+      ALL_VOICES_REGISTERED = 1
     } VoiceRegistrationMode;
 
     Voices(int fregistrationMode);

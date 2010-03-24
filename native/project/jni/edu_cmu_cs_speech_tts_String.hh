@@ -34,136 +34,22 @@
 /*               Date:  March 2010                                       */
 /*************************************************************************/
 /*                                                                       */
-/*  Library classes to manage available flite voices                     */
+/*  Library classes to provide basic the missing String support          */
 /*                                                                       */
 /*************************************************************************/
 
-#include <vector>
-using namespace std;
-
-#include "edu_cmu_cs_speech_tts_fliteVoices.hh"
-
 namespace FliteEngine {
-  
-  Voice::Voice(String flang, String fcountry, String fvar, 
-	       t_voice_register_function freg, 
-	       t_voice_unregister_function funreg)
-  {
-    language = flang;
-    country = fcountry;
-    variant = fvar;
-    fliteVoice = NULL;
-    regfunc = freg;
-    unregfunc = funreg;
-  }
-  
-  Voice::~Voice()
-  {
-    unregisterVoice();
-  }
 
-  bool Voice::isSameLocaleAs(String flang, String fcountry, String fvar)
+  class String
   {
-    if( (language == flang) &&
-	(country == fcountry) &&
-	(variant == fvar) )
-      return true;
-    else
-      return false;
-  }
+  private:
+    char* strdata;
+  public:
+    String(const char* str=0);
+    ~String();
 
-  cst_voice* Voice::registerVoice()
-  {
-    fliteVoice = regfunc(voxdir_path);
-    return fliteVoice;
-  }
+    String& operator=(const String &rhs);
+    bool operator==(const String &other) const;
+  };
 
-  void Voice::unregisterVoice()
-  {
-    if(fliteVoice == NULL) return; // Voice not registered
-    unregfunc(fliteVoice);
-    fliteVoice = NULL;
-  }
-  
-  cst_voice* Voice::getFliteVoice()
-  {
-    return fliteVoice;
-  }
-
-  Voices::Voices(int fregistrationMode)
-  {
-    rMode = fregistrationMode;
-    currentVoice = NULL;
-  }
-
-  Voices::~Voices()
-  {
-    /* Items in the voiceList vector will be destroyed automatically
-       and unregistered in their destructors,
-       so we don't really have to do anything here
-    */
-  }
-
-  void Voices::addVoice(String flang, String fcountry, String fvar, 
-			t_voice_register_function freg,
-			t_voice_unregister_function funreg)
-  {
-    Voice v = Voice(flang, fcountry, fvar, freg, funreg);
-    
-    /* We must register this voice if the registration mode
-       so dictates.
-    */
-
-    if(rMode == ALL_VOICES_REGISTERED)
-      v.registerVoice();
-    voiceList.push_back(v);
-
-  }
-
-  bool Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
-  {
-    vector<Voice>::iterator it;
-    for(it=voiceList.begin(); it<voiceList.end();it++)
-      if(it->isSameLocaleAs(flang, fcountry, fvar))
-	{
-	  return true;
-	}
-    return false;
-  }
-
-  cst_voice* Voices::getFliteVoiceForLocale(String flang, 
-					    String fcountry, String fvar)
-  {
-    vector<Voice>::iterator it;  
-    for(it=voiceList.begin(); it<voiceList.end();it++)
-      if(it->isSameLocaleAs(flang, fcountry, fvar))
-	{
-	  if(rMode == ALL_VOICES_REGISTERED)
-	    {
-	      currentVoice = it;
-	      return currentVoice->fliteVoice;
-	    }
-	  else
-	    {
-	      /* Only one voice can be registered.
-		 Check that the one that the user wants
-		 isn't already the current voice.
-		 Otherwise, unregister current one
-		 and then register and set the requested one
-	      */
-	      if(it == currentVoice)
-		{
-		  return currentVoice->fliteVoice;
-		}
-	      else
-		{
-		  currentVoice->unregisterVoice();
-		  currentVoice = it;
-		  return currentVoice->registerVoice();
-		}
-
-	}
-    currentVoice = NULL; // Requested voice not available!
-    return currentVoice;
-  }
 }

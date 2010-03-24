@@ -5,7 +5,9 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := ttsfliteengine 
-LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteEngine.cpp
+LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteEngine.cpp \
+	edu_cmu_cs_speech_tts_fliteVoices.cpp \
+	edu_cmu_cs_speech_tts_String.cpp
 
 LOCAL_LDLIBS:= -llog \
 	$(LOCAL_PATH)/../libs/armeabi/libcmu_us_rms_me_18.a \
