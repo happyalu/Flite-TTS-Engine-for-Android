@@ -60,6 +60,22 @@ namespace FliteEngine {
     unregisterVoice();
   }
 
+
+  const char* Voice::getLanguage() 
+  {
+    return language.c_str();
+  }
+
+  const char* Voice::getCountry() 
+  {
+    return language.c_str();
+  }
+  
+  const char* Voice:: getVariant() 
+  {
+    return variant.c_str();
+  }
+
   bool Voice::isSameLocaleAs(String flang, String fcountry, String fvar)
   {
     if( (language == flang) &&

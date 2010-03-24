@@ -73,6 +73,10 @@ namespace FliteEngine {
     
     ~Voice();
 
+    const char* getLanguage();
+    const char* getCountry();
+    const char* getVariant();
+
     // Returns true if the voice belongs to the exact locale asked
     bool isSameLocaleAs(String flang, String fcountry, String fvar);
 
