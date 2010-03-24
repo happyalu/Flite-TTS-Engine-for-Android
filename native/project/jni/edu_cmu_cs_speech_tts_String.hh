@@ -50,6 +50,7 @@ namespace FliteEngine {
     char* strdata;
   public:
     String(const char* str=NULL);
+    String(const String& rhs);
     ~String();
 
     String& operator=(const String &rhs);

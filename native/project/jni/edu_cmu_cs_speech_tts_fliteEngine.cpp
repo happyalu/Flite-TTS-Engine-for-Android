@@ -54,16 +54,15 @@
 #include "edu_cmu_cs_speech_tts_Common.hh"
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
 #include "edu_cmu_cs_speech_tts_String.hh"
-using namespace FliteEngine;
 
 namespace android {
 
   static synthDoneCB_t* ttsSynthDoneCBPointer;
-  static Voice* currentVoice;
   static int ttsAbort = 0;
   static int ttsStream = 1;
-  static Voices* loadedVoices;
-
+  FliteEngine::Voices* loadedVoices;
+  FliteEngine::Voice* currentVoice;
+  
   /* BEGIN VOICE SPECIFIC CODE */
 
   // Declarations
@@ -77,9 +76,22 @@ namespace android {
   extern "C" void unregister_cmu_us_rms(cst_voice* voice);
   
   void setVoiceList() {
-    loadedVoices = new Voices(2, FliteEngine::Voices::ALL_VOICES_REGISTERED); // Max number of voices is the first argument.
+    if(loadedVoices != NULL)
+      {
+	LOGW("Voices already initialized!");
+	return;
+      }
+    LOGI("Starting setVoiceList");
+    loadedVoices = new FliteEngine::Voices(2, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
+    if(loadedVoices == NULL)
+      {
+	LOGE("Voice list could not be initialized!");
+	return;
+      }
+    LOGI("setVoiceList: list initialized");
     loadedVoices->addVoice("eng","USA","rms-cg-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
     loadedVoices->addVoice("eng","USA","rms-clunit",&register_cmu_us_rms,&unregister_cmu_us_rms);
+    LOGI("setVoiceList done");
   }
 
   /* END VOICE SPECIFIC CODE */
@@ -95,12 +107,17 @@ namespace android {
     int sample_rate = w->sample_rate;
     
     LOGI("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
-    if(last == 1)
-	ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
-    else
-      ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
+
+    if(ttsSynthDoneCBPointer != NULL)
+      {
+	if(last == 1)
+	  ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
+	else
+	  ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
+	LOGI("flite callback processed!");
+      }
+    LOGE("flite callback not processed because it's NULL!");
     
-    LOGI("flite callback processed!");
 
     if(ttsAbort == 1)
       return CST_AUDIO_STREAM_STOP;
@@ -111,15 +128,26 @@ namespace android {
   // Initializes the TTS engine and returns whether initialization succeeded
   tts_result TtsEngine::init(synthDoneCB_t synthDoneCBPtr)
   {
-    LOGI("TtsEngine::init");
+    LOGI("TtsEngine::init start");
     ttsSynthDoneCBPointer = synthDoneCBPtr;
     flite_init();
     setVoiceList();
+    if(loadedVoices == NULL)
+      {
+	LOGE("TTSEngine::init Could not load voice list");
+	return TTS_FAILURE;
+      }
     currentVoice = loadedVoices->getCurrentVoice();
+    if(currentVoice == NULL)
+      {
+	LOGE("TTSEngine::init Voice list error");
+	return TTS_FAILURE;
+      }
     if (currentVoice->getFliteVoice() == NULL) {
       return TTS_FAILURE;
     }
     ttsAbort = 0;
+    LOGI("TtsEngine::init done");
     return TTS_SUCCESS;
   }
 
@@ -127,7 +155,9 @@ namespace android {
   tts_result TtsEngine::shutdown( void )
   {
     LOGI("TtsEngine::shutdown");
-    delete loadedVoices;
+    if(loadedVoices != NULL)
+      delete loadedVoices;
+    loadedVoices = NULL;
     return TTS_SUCCESS;
   }
 
@@ -147,27 +177,54 @@ namespace android {
     // set properties. Hence this hack
     // Last character of variant = 1 for streaming will be 0 for no streaming.
 
-    int variant_length = strlen(variant);
-    char* actual_variant = new char[variant_length];
-    strncpy(actual_variant, variant, variant_length-1);
-    actual_variant[variant_length] = '\0';
+    // We require a variant.
 
-    char streamingEnabled = variant[strlen(variant)-1];
+    if(strcmp(variant,"")==0)
+      {
+	LOGE("TtsEngine::setLanguage: Unsupported variant of voice.");
+	return TTS_FAILURE;
+      }
+
+    int variant_length = strlen(variant);
+
+    char streamingEnabled = variant[variant_length-1];
     if(streamingEnabled == '1')
       {
 	ttsStream = 1;
 	LOGD("TtsEngine::setLanguage : Setting ttsStream to 1");
       }
-    else
+    else if(streamingEnabled == '0')
       {
 	ttsStream = 0;
 	LOGD("TtsEngine::setLanguage : Setting ttsStream to 0");
       }
-    
+    else
+      {
+	LOGE("Streaming byte not set at end of variant. Can not synthesize.");
+	return TTS_FAILURE;
+      }
+
+
+    char* actual_variant = NULL;
+    actual_variant = new char[variant_length];
+
+    if(actual_variant != NULL)
+      {
+	// Avoid uninitialized memory 
+	for(int i=0;i<variant_length;i++)
+	  actual_variant[i] = '\0'; 
+	strncpy(actual_variant, variant, variant_length-1);
+      }
+
+        
     // Request the voice to voice-manager
     currentVoice = loadedVoices->getVoiceForLocale(lang, country, actual_variant);
-    
-    delete actual_variant;
+    delete[] actual_variant;
+    if(currentVoice == NULL)
+      {
+	LOGE("TtsEngine::setLanguage : Could not set voice");
+	return TTS_FAILURE;
+      }
     
     if(currentVoice->getFliteVoice() == NULL)
       return TTS_FAILURE;
@@ -181,7 +238,7 @@ namespace android {
                                                     const char *variant) 
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
-
+    
     if(loadedVoices->isLocaleAvailable(lang, country, variant))
       return TTS_LANG_AVAILABLE;
     else
@@ -296,14 +353,26 @@ namespace android {
 
         size_t bufSize = w->num_samples * sizeof(short);
         int8_t* castedWave = (int8_t *)w->samples;
-
-        ttsSynthDoneCBPointer(userdata, w->sample_rate, AudioSystem::PCM_16_BIT, w->num_channels, castedWave, bufSize, TTS_SYNTH_DONE);
-
+	
+	if(ttsSynthDoneCBPointer!=NULL)
+	    ttsSynthDoneCBPointer(userdata, w->sample_rate, AudioSystem::PCM_16_BIT, w->num_channels, castedWave, bufSize, TTS_SYNTH_DONE);
+	else
+	  {
+	    LOGI("flite callback not processed because it's NULL!");
+	  }
         delete_wave(w);
 
         return TTS_SUCCESS;
       }
   }
+  
+  // Function to get TTS Engine
+  TtsEngine* getTtsEngine()
+  {
+    LOGI("TtsEngine::getTtsEngine");
+    return new TtsEngine();
+  }
+
 }
 
 

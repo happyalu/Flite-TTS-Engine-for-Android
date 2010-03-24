@@ -46,26 +46,36 @@ namespace FliteEngine {
 
   String::String(const char* str)
   {
-    if(str==NULL)
+    if(str!=NULL)
       {
-	strdata = new char[1];
-	strcpy(strdata, "");
+	
+	strdata = new char[strlen(str)+1];
+	if(strdata != NULL)
+	  strcpy(strdata, str);
       }
     else
       {
-	strdata = new char[strlen(str)+1];
-	strcpy(strdata, str);
+	strdata = NULL;
       }
+  }
+
+  String::String(const String& rhs)
+  {
+    if(rhs.strdata == NULL)
+      strdata = NULL;
+    else {
+      strdata = new char[strlen(rhs.strdata)+1];
+      if(strdata != NULL)
+	strcpy(strdata, rhs.strdata);
+    }
   }
 
   String::~String()
   {
     if(strdata != NULL)
       {
-	delete strdata;
-	strdata = NULL;
+	delete[] strdata;
       }
-    printf("destroyed\n");
   }
 
   String& String::operator=(const String &rhs)
@@ -74,9 +84,10 @@ namespace FliteEngine {
     if(this != &rhs)
       {
 	if(strdata != NULL)
-	  delete strdata;
+	  delete[] strdata;
 
 	strdata = new char[strlen(rhs.strdata)+1];
+	if(strdata != NULL)
 	strcpy(strdata, rhs.strdata);
       }
     return *this;

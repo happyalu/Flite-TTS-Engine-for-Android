@@ -43,7 +43,7 @@
 
 namespace FliteEngine {
   
-  Voice::Voice(String flang, String fcountry, String fvar, 
+  Voice::Voice(const String flang, const String fcountry, const String fvar, 
 	       t_voice_register_function freg, 
 	       t_voice_unregister_function funreg)
   {
@@ -57,7 +57,9 @@ namespace FliteEngine {
   
   Voice::~Voice()
   {
+    LOGI("Voice::~Voice: unregistering voice");
     unregisterVoice();
+    LOGI("Voice::~Voice: voice unregistered");
   }
 
 
@@ -68,7 +70,7 @@ namespace FliteEngine {
 
   const char* Voice::getCountry() 
   {
-    return language.c_str();
+    return country.c_str();
   }
   
   const char* Voice:: getVariant() 
@@ -78,6 +80,7 @@ namespace FliteEngine {
 
   bool Voice::isSameLocaleAs(String flang, String fcountry, String fvar)
   {
+    LOGI("Voice::isSameLocaleAs");
     if( (language == flang) &&
 	(country == fcountry) &&
 	(variant == fvar) )
@@ -88,14 +91,18 @@ namespace FliteEngine {
 
   cst_voice* Voice::registerVoice()
   {
+    LOGI("Voice::registerVoice for %s",variant.c_str());
     fliteVoice = regfunc(voxdir_path);
+    LOGI("Voice::registerVoice done");
     return fliteVoice;
   }
 
   void Voice::unregisterVoice()
   {
+    LOGI("Calling flite unregister for %s",variant.c_str());
     if(fliteVoice == NULL) return; // Voice not registered
     unregfunc(fliteVoice);
+    LOGI("Done unregistering voice in flite");
     fliteVoice = NULL;
   }
   
@@ -104,8 +111,9 @@ namespace FliteEngine {
     return fliteVoice;
   }
 
-  Voices::Voices(int fmaxCount, int fregistrationMode)
+  Voices::Voices(int fmaxCount, VoiceRegistrationMode fregistrationMode)
   {
+    
     rMode = fregistrationMode;
     currentVoice = NULL;
     voiceList = new Voice*[fmaxCount];
@@ -115,9 +123,15 @@ namespace FliteEngine {
 
   Voices::~Voices()
   {
-    for(int i=0;i<currentCount;i++)
-      delete voiceList[i]; // Delete the individual voices
-    delete voiceList;
+    LOGI("Voices::~Voices Deleting voice list");
+    if(voiceList != NULL)
+      {
+	for(int i=0;i<currentCount;i++)
+	  if(voiceList[i] != NULL)
+	    delete voiceList[i]; // Delete the individual voices
+	delete[] voiceList;
+      }
+    LOGI("Voices::~Voices voice list deleted");
   }
 
   Voice* Voices::getCurrentVoice()
@@ -129,7 +143,7 @@ namespace FliteEngine {
 			t_voice_register_function freg,
 			t_voice_unregister_function funreg)
   {
-
+    LOGI("Voices::addVoice adding %s",fvar.c_str());
     if(currentCount==maxCount)
       {
 	LOGE("Could not add voice %s_%s_%s. Too many voices",
@@ -138,13 +152,13 @@ namespace FliteEngine {
       }
     
     Voice* v = new Voice(flang, fcountry, fvar, freg, funreg);
-    
+
     /* We must register this voice if the registration mode
        so dictates.
     */
 
     if(rMode == ALL_VOICES_REGISTERED)
-      v->registerVoice();
+        v->registerVoice();
 
     voiceList[currentCount] = v;
     currentCount++;
@@ -154,17 +168,22 @@ namespace FliteEngine {
 
   bool Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
   {
+    LOGI("Voices::isLocaleAvailable");
     for(int i=0; i<currentCount;i++)
-      if(voiceList[i]->isSameLocaleAs(flang, fcountry, fvar))
-	{
-	  return true;
-	}
+      {
+	if(voiceList[i] == NULL) continue;
+	if(voiceList[i]->isSameLocaleAs(flang, fcountry, fvar))
+	  {
+	    return true;
+	  }
+      }
     return false;
   }
 
   Voice* Voices::getVoiceForLocale(String flang, 
 				   String fcountry, String fvar)
   {
+    LOGI("Voices::getVoiceForLocale");
     Voice* ptr;
     for(int i=0; i<currentCount;i++)
       {
@@ -178,7 +197,7 @@ namespace FliteEngine {
 	      }
 	    else
 	      {
-		/* Only one voice can be registered.
+		    /* Only one voice can be registered.
 		   Check that the one that the user wants
 		   isn't already the current voice.
 		   Otherwise, unregister current one
@@ -190,7 +209,8 @@ namespace FliteEngine {
 		  }
 		else
 		  {
-		    currentVoice->unregisterVoice();
+		    if(currentVoice!= NULL)
+		      currentVoice->unregisterVoice();
 		    currentVoice = ptr;
 		    currentVoice->registerVoice();
 		    return currentVoice;

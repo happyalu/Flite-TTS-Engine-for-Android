@@ -52,6 +52,12 @@ namespace FliteEngine {
   // Function pointer type for flite_unregister_voice
   typedef void (*t_voice_unregister_function)(cst_voice*);
 
+  enum VoiceRegistrationMode {
+    ONLY_ONE_VOICE_REGISTERED = 0,
+    ALL_VOICES_REGISTERED = 1
+  }; 
+
+
   class Voice {
   private:
 
@@ -72,7 +78,7 @@ namespace FliteEngine {
 	  t_voice_unregister_function funreg);
     
     ~Voice();
-
+    
     const char* getLanguage();
     const char* getCountry();
     const char* getVariant();
@@ -93,16 +99,12 @@ namespace FliteEngine {
   private:
     Voice** voiceList;
     Voice* currentVoice;
-    int rMode; // Registration mode
+    VoiceRegistrationMode rMode; // Registration mode
     int maxCount; // Maximum voice list size
     int currentCount; // Current occupancy of voice list
   public:
-    static enum {
-      ONLY_ONE_VOICE_REGISTERED = 0,
-      ALL_VOICES_REGISTERED = 1
-    } VoiceRegistrationMode;
 
-    Voices(int fmaxCount,int fregistrationMode);
+    Voices(int fmaxCount,VoiceRegistrationMode fregistrationMode);
     ~Voices();
 
     Voice* getCurrentVoice();
