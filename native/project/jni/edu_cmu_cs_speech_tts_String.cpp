@@ -38,11 +38,13 @@
 /*                                                                       */
 /*************************************************************************/
 
+#include "edu_cmu_cs_speech_tts_String.hh"
 #include<string.h>
+#include<stdio.h>
 
 namespace FliteEngine {
 
-  String::String(const char* str=NULL)
+  String::String(const char* str)
   {
     if(str==NULL)
       {
@@ -63,6 +65,7 @@ namespace FliteEngine {
 	delete strdata;
 	strdata = NULL;
       }
+    printf("destroyed\n");
   }
 
   String& String::operator=(const String &rhs)
@@ -73,13 +76,13 @@ namespace FliteEngine {
 	if(strdata != NULL)
 	  delete strdata;
 
-	strdata = new char[strlen(rhs.data)+1];
-	strcpy(strdata, rhs.data);
+	strdata = new char[strlen(rhs.strdata)+1];
+	strcpy(strdata, rhs.strdata);
       }
     return *this;
   }
 
-  bool operator==(const String &other) const
+  bool String::operator==(const String &other) const
   {
     if( (strdata == NULL) or (other.strdata == NULL) )
       return false;
@@ -88,5 +91,10 @@ namespace FliteEngine {
       return true;
     else return false;
  }
+
+  const char* String::c_str()
+  {
+    return strdata;
+  }
 
 }

@@ -38,6 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
+#include<stdlib.h>
+
 namespace FliteEngine {
 
   class String
@@ -45,11 +47,14 @@ namespace FliteEngine {
   private:
     char* strdata;
   public:
-    String(const char* str=0);
+    String(const char* str=NULL);
     ~String();
 
     String& operator=(const String &rhs);
     bool operator==(const String &other) const;
+    
+    const char* c_str();
+    
   };
 
 }
