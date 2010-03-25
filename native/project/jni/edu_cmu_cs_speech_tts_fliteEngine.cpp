@@ -89,7 +89,7 @@ namespace android {
 	return;
       }
     LOGI("setVoiceList: list initialized");
-    loadedVoices->addVoice("eng","USA","rms-cg-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
+    loadedVoices->addVoice("eng","USA","rms-cg-me-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
     loadedVoices->addVoice("eng","USA","rms-clunit",&register_cmu_us_rms,&unregister_cmu_us_rms);
     LOGI("setVoiceList done");
   }
@@ -116,8 +116,11 @@ namespace android {
 	  ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
 	LOGI("flite callback processed!");
       }
-    LOGE("flite callback not processed because it's NULL!");
-    
+    else
+      {
+	LOGE("flite callback not processed because it's NULL!");
+	ttsAbort = 1;
+      }
 
     if(ttsAbort == 1)
       return CST_AUDIO_STREAM_STOP;

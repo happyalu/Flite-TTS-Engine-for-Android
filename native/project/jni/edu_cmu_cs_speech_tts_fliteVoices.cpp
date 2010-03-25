@@ -130,6 +130,7 @@ namespace FliteEngine {
 	  if(voiceList[i] != NULL)
 	    delete voiceList[i]; // Delete the individual voices
 	delete[] voiceList;
+	voiceList = NULL;
       }
     LOGI("Voices::~Voices voice list deleted");
   }
@@ -162,8 +163,10 @@ namespace FliteEngine {
 
     voiceList[currentCount] = v;
     currentCount++;
+
+    // Set a default voice.
     if(currentVoice == NULL)
-      currentVoice = v;
+      currentVoice = getVoiceForLocale(flang, fcountry, fvar); // Take care of voice registration issues
   }
 
   bool Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
@@ -203,12 +206,15 @@ namespace FliteEngine {
 		   Otherwise, unregister current one
 		   and then register and set the requested one
 		*/
+		
 		if(ptr == currentVoice)
 		  {
+		    LOGD("Requested voice is the current voice!");
 		    return currentVoice;
 		  }
 		else
 		  {
+		    LOGD("Requested voice is not registered. Need to register");
 		    if(currentVoice!= NULL)
 		      currentVoice->unregisterVoice();
 		    currentVoice = ptr;
