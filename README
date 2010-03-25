@@ -2,7 +2,7 @@ Android Application for Flite
 Author: Alok Parlikar <aup@cs.cmu.edu>
 Copyright 2010
 
-This directory contains the native code for FliteEngine. Flite Libraries are
+This directory contains the native code and Java wrapper for FliteEngine. Flite Libraries are
 distributed in binary form here, but you can download flite from
 www.cmuflite.org and compile them again. 
 
