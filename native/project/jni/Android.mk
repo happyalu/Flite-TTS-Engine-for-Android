@@ -11,7 +11,6 @@ LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteEngine.cpp \
 
 LOCAL_LDLIBS:= -llog \
 	$(LOCAL_PATH)/../libs/armeabi/libcmu_us_rms_me_18.a \
-	$(LOCAL_PATH)/../libs/armeabi/libcmu_us_rms.a \
 	$(LOCAL_PATH)/../libs/armeabi/libflite_cmulex.a \
 	$(LOCAL_PATH)/../libs/armeabi/libflite_usenglish.a \
 	$(LOCAL_PATH)/../libs/armeabi/libflite.a \

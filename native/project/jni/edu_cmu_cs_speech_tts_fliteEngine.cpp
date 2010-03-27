@@ -71,10 +71,6 @@ namespace android {
   extern "C" cst_voice* register_cmu_us_rms_me_18(const char* voxdir);
   extern "C" void unregister_cmu_us_rms_me_18(cst_voice* voice);
   
-  // RMS CLUNIT voice
-  extern "C" cst_voice* register_cmu_us_rms(const char* voxdir); 
-  extern "C" void unregister_cmu_us_rms(cst_voice* voice);
-  
   void setVoiceList() {
     if(loadedVoices != NULL)
       {
@@ -82,7 +78,7 @@ namespace android {
 	return;
       }
     LOGI("Starting setVoiceList");
-    loadedVoices = new FliteEngine::Voices(2, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
+    loadedVoices = new FliteEngine::Voices(1, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
     if(loadedVoices == NULL)
       {
 	LOGE("Voice list could not be initialized!");
@@ -90,7 +86,6 @@ namespace android {
       }
     LOGI("setVoiceList: list initialized");
     loadedVoices->addVoice("eng","USA","rms-cg-me-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
-    loadedVoices->addVoice("eng","USA","rms-clunit",&register_cmu_us_rms,&unregister_cmu_us_rms);
     LOGI("setVoiceList done");
   }
 
