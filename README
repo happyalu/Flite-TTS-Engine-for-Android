@@ -1,14 +1,17 @@
-Android Application for Flite
-Author: Alok Parlikar <aup@cs.cmu.edu>
-Copyright 2010
+Flite TTS Engine for Android
+============================
 
-This directory contains the native code and Java wrapper for FliteEngine. Flite Libraries are
-distributed in binary form here, but you can download flite from
-www.cmuflite.org and compile them again. 
+This application provides the Flite (Festival lite) speech synthesizer for
+android. To use this engine, you need to install the Eyes-free TTS library
+available from Google. 
+
+
+This distribution contains the native code and Java wrapper for
+FliteEngine. Source code to compile Flite and the voices is not included here,
+but you can download it from www.cmuflite.org.  
 
 To compile this project, you need to build the native part first, then build
 the Java project.
-
 
 The native code part, which resides in Application.mk and project/...,
 must be built with the Android NDK:
