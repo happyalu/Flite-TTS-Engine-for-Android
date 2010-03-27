@@ -252,6 +252,9 @@ namespace android {
   tts_result TtsEngine::getLanguage(char *language, char *country, char *variant)
   {
     LOGI("TtsEngine::getLanguage");
+    if(currentVoice == NULL)
+      return TTS_FAILURE;
+
     strcpy(language, currentVoice->getLanguage());
     strcpy(country, currentVoice->getCountry());
     strcpy(variant, currentVoice->getVariant());
