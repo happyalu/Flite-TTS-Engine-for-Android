@@ -8,7 +8,7 @@ LOCAL_JAVA_RESOURCE_DIRS := resources
 
 LOCAL_JAVA_LIBRARIES := core framework
 
-LOCAL_MODULE:= ttsfliteengine
+LOCAL_MODULE:= ttsflite
 
 LOCAL_DX_FLAGS := --core-library
 

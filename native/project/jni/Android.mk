@@ -4,7 +4,7 @@ LOCAL_PATH:= $(call my-dir)
 #
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := ttsfliteengine 
+LOCAL_MODULE    := ttsflite 
 LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteEngine.cpp \
 	edu_cmu_cs_speech_tts_fliteVoices.cpp \
 	edu_cmu_cs_speech_tts_String.cpp
