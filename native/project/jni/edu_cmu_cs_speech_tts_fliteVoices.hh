@@ -47,7 +47,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#define voxdir_path "/sdcard/flite"
+#define voxdir_path "/sdcard/flite-data"
 
 // Generic CG voice
 extern "C" cst_voice* register_cmu_us_generic_cg(const char *voxdir);
