@@ -93,6 +93,31 @@ namespace FliteEngine {
     return *this;
   }
 
+
+  String String::operator+(const String &other)
+  {
+    int newlength;
+    char* s;
+
+    if(strdata == NULL)
+      return other;
+
+    if(other.strdata == NULL)
+      return *this;
+
+    newlength = strlen(strdata) + strlen(other.strdata) + 1;
+
+    s = new char[newlength];
+    strcpy(s, strdata);
+    strcat(s, other.strdata);
+
+    String addedStr = String(s);
+    delete[] s;
+    return addedStr;
+
+  }
+
+
   bool String::operator==(const String &other) const
   {
     if( (strdata == NULL) or (other.strdata == NULL) )

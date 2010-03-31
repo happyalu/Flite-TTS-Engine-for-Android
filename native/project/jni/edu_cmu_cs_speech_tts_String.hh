@@ -55,6 +55,8 @@ namespace FliteEngine {
 
     String& operator=(const String &rhs);
     bool operator==(const String &other) const;
+
+    String operator+(const String &other);
     
     const char* c_str();
     
