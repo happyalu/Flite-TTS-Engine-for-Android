@@ -71,7 +71,7 @@ namespace android {
 	return;
       }
     LOGI("Starting setVoiceList");
-    loadedVoices = new FliteEngine::Voices(1, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
+    loadedVoices = new FliteEngine::Voices(0, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
     if(loadedVoices == NULL)
       {
 	LOGE("Voice list could not be initialized!");
@@ -164,53 +164,40 @@ namespace android {
   {
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
 
-    // Set streaming or non-streaming via hacky way. There doesn't seem to be Java API to 
-    // set properties. Hence this hack
-    // Last character of variant = 1 for streaming will be 0 for no streaming.
-
     // We require a variant.
-
     if(strcmp(variant,"")==0)
       {
 	LOGE("TtsEngine::setLanguage: Unsupported variant of voice.");
 	return TTS_FAILURE;
       }
-
-    int variant_length = strlen(variant);
-
-    char streamingEnabled = variant[variant_length-1];
-    if(streamingEnabled == '1')
+    
+    // The hack to set streaming:
+    // If language and country are not set, then variant will be 
+    // interpreted as being "stream" or "nostream" to set the appropriate parameters.
+    // The default is to stream.
+    if((strcmp(lang,"")==0) && (strcmp(country,"")==0))
       {
-	ttsStream = 1;
-	LOGD("TtsEngine::setLanguage : Setting ttsStream to 1");
+	if(strcmp(variant, "stream") == 0)
+	  {
+	    LOGI("TtsEngine::setLanguage: TTS Streaming is ENABLED. Synthesis Benchmarks DISABLED.");
+	    ttsStream = 1;
+	    return TTS_SUCCESS;
+	  }
+	else if(strcmp(variant, "nostream")==0)
+	  {
+	    LOGI("TtsEngine::setLanguage: TTS Streaming is DISABLED. Synthesis Benchmarks ENABLED.");
+	    ttsStream = 0;
+	    return TTS_SUCCESS;
+	  }
+	else
+	  {
+	    LOGE("TtsEngine::setLanguage: Incorrect setting %s. If you don't specify language and country, variant should be 'stream' or 'nostream'",variant);
+	    return TTS_FAILURE;
+	  }
       }
-    else if(streamingEnabled == '0')
-      {
-	ttsStream = 0;
-	LOGD("TtsEngine::setLanguage : Setting ttsStream to 0");
-      }
-    else
-      {
-	LOGE("Streaming byte not set at end of variant. Can not synthesize.");
-	return TTS_FAILURE;
-      }
-
-
-    char* actual_variant = NULL;
-    actual_variant = new char[variant_length];
-
-    if(actual_variant != NULL)
-      {
-	// Avoid uninitialized memory 
-	for(int i=0;i<variant_length;i++)
-	  actual_variant[i] = '\0'; 
-	strncpy(actual_variant, variant, variant_length-1);
-      }
-
-        
+    
     // Request the voice to voice-manager
-    currentVoice = loadedVoices->getVoiceForLocale(lang, country, actual_variant);
-    delete[] actual_variant;
+    currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
     if(currentVoice == NULL)
       {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
@@ -337,8 +324,8 @@ namespace android {
         dif = difftime(end, start);
         float wavlen = (float)w->num_samples / w->sample_rate;
 
-        float timesrealtime = dif/wavlen;
-	LOGW("A %1.2f second file synthesized in %1.2f seconds: %1.2f x real time.", wavlen, dif, timesrealtime);
+        float timesrealtime = wavlen/dif;
+	LOGW("A %1.2f second file synthesized in %1.2f seconds: synthesis is %1.2f times faster than real time.", wavlen, dif, timesrealtime);
 
         LOGI("Done flite synthesis.");
 

@@ -45,7 +45,8 @@
 #include <tts/TtsEngine.h>
 
 #include <sys/stat.h>
-
+#include <fcntl.h>
+#include <unistd.h>
 #define voxdir_path "/sdcard/flite"
 
 // Generic CG voice
@@ -84,7 +85,7 @@ namespace FliteEngine {
     bool isSameLocaleAs(String flang, String fcountry, String fvar);
     
     // Returns how far the language request is supported.
-    virtual android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar){}
+    virtual android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar){return android::TTS_LANG_NOT_SUPPORTED;}
     
     virtual void unregisterVoice() {}
 };
@@ -106,7 +107,7 @@ namespace FliteEngine {
 	  t_voice_unregister_function funreg);
     
     ~LinkedVoice();
-    
+
     cst_voice* registerVoice();
     void unregisterVoice();
     
@@ -132,6 +133,7 @@ namespace FliteEngine {
     VoiceRegistrationMode mRMode; // Registration mode
     int mMaxCount; // Maximum voice list size
     int mCurrentCount; // Current occupancy of voice list
+
   public:
 
     Voices(int fmaxCount,VoiceRegistrationMode fregistrationMode);

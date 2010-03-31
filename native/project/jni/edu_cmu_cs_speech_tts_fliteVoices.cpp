@@ -131,6 +131,7 @@ namespace FliteEngine {
   ClustergenVoice::ClustergenVoice()
   {
     LOGI("Creating a generic clustergen voice loader.");
+    mFliteVoice = NULL;
   }
 
   ClustergenVoice::~ClustergenVoice()
@@ -170,10 +171,12 @@ namespace FliteEngine {
 
   bool file_exists(String filename)
   {
-    struct stat file_info;
-    stat(filename.c_str(), &file_info);
-    return S_ISREG(file_info.st_mode);
-    
+    int fd;
+    fd = open(filename.c_str(),O_RDONLY);
+    if(fd<0)
+      return false;
+    close(fd);
+    return true;
   }
 
   // Check that the required clustergen file is present on disk and return the information.
@@ -239,6 +242,8 @@ namespace FliteEngine {
     mCurrentVoice = NULL;
     mVoiceList = new LinkedVoice*[fmaxCount];
     mMaxCount = fmaxCount;
+    for(int i=0;i<mMaxCount;i++)
+      mVoiceList[i]=NULL;
     mCurrentCount = 0;
   }
 
@@ -279,7 +284,6 @@ namespace FliteEngine {
     /* We must register this voice if the registration mode
        so dictates.
     */
-    
     if(mRMode == ALL_VOICES_REGISTERED)
       v->registerVoice();
 
@@ -363,7 +367,7 @@ namespace FliteEngine {
     /* Check that the voice we currently have set doesn't already
        provide what is requested.
     */
-    if(mCurrentVoice->isSameLocaleAs(flang, fcountry, fvar))
+    if((mCurrentVoice != NULL) && (mCurrentVoice->isSameLocaleAs(flang, fcountry, fvar)))
       {
 	LOGW("Voices::getVoiceForLocale: Requested voice is already loaded. Doing nothing.");
 	return mCurrentVoice;
@@ -372,7 +376,7 @@ namespace FliteEngine {
     /* If registration mode dictatas that only one voice can be set, 
        this is the right time to unregister currently loaded voice.
     */
-    if(mRMode == ONLY_ONE_VOICE_REGISTERED)
+    if((mCurrentVoice != NULL) && (mRMode == ONLY_ONE_VOICE_REGISTERED))
       {
 	LOGI("Voices::getVoiceForLocale: Request for new voice. Unregistering current voice");
 	mCurrentVoice->unregisterVoice();
