@@ -42,8 +42,15 @@
 #include "edu_cmu_cs_speech_tts_String.hh"
 
 #include <include/flite.h>
+#include <tts/TtsEngine.h>
+
+#include <sys/stat.h>
 
 #define voxdir_path "/sdcard/flite"
+
+// Generic CG voice
+extern "C" cst_voice* register_cmu_us_generic_cg(const char *voxdir);
+extern "C" void unregister_cmu_us_generic_cg(cst_voice* voice);
 
 namespace FliteEngine {
   // Function pointer type for flite_register_voice
@@ -59,49 +66,72 @@ namespace FliteEngine {
 
 
   class Voice {
-  private:
-
-    String language;  // ISO3 language
-    String country;   // ISO3 country
-    String variant;   // Short name of the variant
-    cst_voice* fliteVoice; //Pointer to registered flite voice 
-
-    // Flite Function that should be called to register the voice
-    t_voice_register_function regfunc; 
-
-    // Flite Function that should be called to unregister the voice=
-    t_voice_unregister_function unregfunc; 
-
+  protected:
+    String mLanguage;  // ISO3 language
+    String mCountry;   // ISO3 country
+    String mVariant;   // Short name of the variant
+    cst_voice* mFliteVoice; //Pointer to registered flite voice
+    
   public:
-    Voice(String flang, String fcountry, String fvar, 
-	  t_voice_register_function freg, 
-	  t_voice_unregister_function funreg);
-    
-    ~Voice();
-    
     const char* getLanguage();
     const char* getCountry();
     const char* getVariant();
-
-    // Returns true if the voice belongs to the exact locale asked
-    bool isSameLocaleAs(String flang, String fcountry, String fvar);
-
-    cst_voice* registerVoice();
-    void unregisterVoice();
-
+    
     // Returns the currently set flite voice. 
     // WARNING: This will *NOT* register the voice.
     cst_voice* getFliteVoice();
     
+    bool isSameLocaleAs(String flang, String fcountry, String fvar);
+    
+    // Returns how far the language request is supported.
+    virtual android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar){}
+    
+    virtual void unregisterVoice() {}
+};
+  
+
+  // Voices that are linked into the library
+  class LinkedVoice : public Voice {
+  private:
+
+    // Flite Function that should be called to register the voice
+    t_voice_register_function mRegfunc; 
+
+    // Flite Function that should be called to unregister the voice=
+    t_voice_unregister_function mUnregfunc; 
+
+  public:
+    LinkedVoice(String flang, String fcountry, String fvar, 
+	  t_voice_register_function freg, 
+	  t_voice_unregister_function funreg);
+    
+    ~LinkedVoice();
+    
+    cst_voice* registerVoice();
+    void unregisterVoice();
+    
+    android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar);
+
+  };
+
+  class ClustergenVoice : public Voice {
+  public:
+    ClustergenVoice();
+    ~ClustergenVoice();
+    
+    android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar);
+    android::tts_result setLanguage(String flang, String fcountry, String fvar);
+    void unregisterVoice();
   };
 
   class Voices {
   private:
-    Voice** voiceList;
-    Voice* currentVoice;
-    VoiceRegistrationMode rMode; // Registration mode
-    int maxCount; // Maximum voice list size
-    int currentCount; // Current occupancy of voice list
+    LinkedVoice** mVoiceList;
+    Voice* mCurrentVoice;
+    ClustergenVoice mCGVoice;
+    VoiceRegistrationMode mRMode; // Registration mode
+    int mMaxCount; // Maximum voice list size
+    int mCurrentCount; // Current occupancy of voice list
   public:
 
     Voices(int fmaxCount,VoiceRegistrationMode fregistrationMode);
@@ -109,12 +139,14 @@ namespace FliteEngine {
 
     Voice* getCurrentVoice();
 
-    void addVoice(String flang, String fcountry, String fvar, 
+    void addLinkedVoice(String flang, String fcountry, String fvar, 
 		  t_voice_register_function freg,
 		  t_voice_unregister_function funreg);
 
+    void setDefaultVoice();
+
     // Find out if a particular locale is available.
-    bool isLocaleAvailable(String flang, String fcountry, String fvar);
+    android::tts_support_result isLocaleAvailable(String flang, String fcountry, String fvar);
 
     // Register and set the current voice to the one asked for
     Voice* getVoiceForLocale(String flang, String fcountry, String fvar);

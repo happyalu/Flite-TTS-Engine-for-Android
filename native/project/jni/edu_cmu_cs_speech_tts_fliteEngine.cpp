@@ -47,9 +47,6 @@
 // Flite headers
 #include <include/flite.h>
 
-// Eyes-free headers
-#include <tts/TtsEngine.h>
-
 // Local headers
 #include "edu_cmu_cs_speech_tts_Common.hh"
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
@@ -67,10 +64,6 @@ namespace android {
 
   // Declarations
 
-  // RMS CG voice with order reduced to 18
-  extern "C" cst_voice* register_cmu_us_rms_me_18(const char* voxdir);
-  extern "C" void unregister_cmu_us_rms_me_18(cst_voice* voice);
-  
   void setVoiceList() {
     if(loadedVoices != NULL)
       {
@@ -85,7 +78,7 @@ namespace android {
 	return;
       }
     LOGI("setVoiceList: list initialized");
-    loadedVoices->addVoice("eng","USA","rms-cg-me-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
+    //loadedVoices->addVoice("eng","USA","rms-cg-me-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
     LOGI("setVoiceList done");
   }
 
@@ -237,10 +230,7 @@ namespace android {
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
     
-    if(loadedVoices->isLocaleAvailable(lang, country, variant))
-      return TTS_LANG_AVAILABLE;
-    else
-      return TTS_LANG_NOT_SUPPORTED;
+    return loadedVoices->isLocaleAvailable(lang, country, variant);
   }
 
   // Provide information about the currently set language.
