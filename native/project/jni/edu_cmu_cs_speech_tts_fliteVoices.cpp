@@ -232,6 +232,24 @@ namespace FliteEngine {
     mLanguage = flang;
     mCountry = fcountry;
     mVariant = fvar;
+    
+    // Print out voice information from the meta-data.
+    const char* lang, *country, *gender, *age, *build_date, *desc;
+
+    lang = flite_get_param_string(mFliteVoice->features, "language", "");
+    country = flite_get_param_string(mFliteVoice->features, "country", "");
+    gender = flite_get_param_string(mFliteVoice->features, "gender", "");
+    age = flite_get_param_string(mFliteVoice->features, "age", "");
+    build_date = flite_get_param_string(mFliteVoice->features, "build_date", "");
+    desc = flite_get_param_string(mFliteVoice->features, "desc", "");
+
+    LOGV("      Clustergen voice: Voice Language: %s",lang);
+    LOGV("      Clustergen voice: Speaker Country: %s",country);
+    LOGV("      Clustergen voice: Speaker Gender: %s",gender);
+    LOGV("      Clustergen voice: Speaker Age: %s",age);
+    LOGV("      Clustergen voice: Voice Build Date: %s",build_date);
+    LOGV("      Clustergen voice: Voice Description: %s",desc);
+
     return android::TTS_SUCCESS;
   }
 
