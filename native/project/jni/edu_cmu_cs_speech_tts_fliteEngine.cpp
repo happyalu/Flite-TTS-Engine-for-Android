@@ -314,18 +314,31 @@ namespace android {
 	LOGI("TtsEngine::synthesizeText: streaming is DISABLED");
         LOGI("Starting Synthesis");
 
-        time_t end,start;
-        double dif = 0;
-        time ( &start );
+        timespec start, end;
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
 
         cst_wave* w = flite_text_to_wave(text, flite_voice);
 
-        time ( &end);
-        dif = difftime(end, start);
-        float wavlen = (float)w->num_samples / w->sample_rate;
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
-        float timesrealtime = wavlen/dif;
-	LOGW("A %1.2f second file synthesized in %1.2f seconds: synthesis is %1.2f times faster than real time.", wavlen, dif, timesrealtime);
+        // Calculate time difference
+        timespec temp;
+        if ((end.tv_nsec-start.tv_nsec)<0)
+          {
+            temp.tv_sec = end.tv_sec-start.tv_sec-1;
+            temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+          }
+        else
+          {
+            temp.tv_sec = end.tv_sec-start.tv_sec;
+            temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+          }
+
+        float diffmilliseconds = 1000*temp.tv_sec + (temp.tv_nsec)/1000000;
+
+        float wavlen = 1000*((float)w->num_samples / w->sample_rate);
+        float timesrealtime = wavlen/diffmilliseconds;
+        LOGW("A %1.2f ms file synthesized in %1.2f ms: synthesis is %1.2f times faster than real time.", wavlen, diffmilliseconds, timesrealtime);
 
         LOGI("Done flite synthesis.");
 
