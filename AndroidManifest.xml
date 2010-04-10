@@ -3,7 +3,9 @@
 	package="edu.cmu.cs.speech.tts.flite" android:versionCode="1"
 	android:versionName="1.0">
 	<uses-sdk android:minSdkVersion="4" />
-	<application android:icon="@drawable/icon"
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+ 	<application android:icon="@drawable/icon"
 		     android:label="@string/app_name">
 
 	  <activity android:name=".DownloadVoiceData"
