@@ -9,14 +9,12 @@
  	<application android:icon="@drawable/icon"
 		     android:label="@string/app_name">
 
-	  <activity android:name=".DownloadVoiceData"
-		    android:label="@string/app_name"
-		    android:theme="@android:style/Theme.Translucent.NoTitleBar">
-	    <intent-filter>
-	      <action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
-              <category android:name="android.intent.category.DEFAULT" />
-	    </intent-filter>
-	  </activity>
+	<activity android:name=".DownloadVoiceData" android:label="@string/app_name">
+		<intent-filter>
+			<action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
+			<category android:name="android.intent.category.DEFAULT" />
+		</intent-filter>
+	</activity>
 
 	  <activity android:name=".CheckVoiceData"
 		    android:label="@string/app_name"

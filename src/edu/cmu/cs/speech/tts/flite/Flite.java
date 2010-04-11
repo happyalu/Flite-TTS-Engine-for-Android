@@ -2,8 +2,6 @@ package edu.cmu.cs.speech.tts.flite;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.content.Intent;
-
 
 public class Flite extends Activity {
     
