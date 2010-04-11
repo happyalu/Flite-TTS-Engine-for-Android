@@ -2,4 +2,6 @@
 <resources>
     <string name="hello">Hello World, Flite</string>
     <string name="app_name">Flite Engine</string>
+
+    <string name="eng_sample">This is a sample English sentence for Flite synthesizer.</string>
 </resources>
