@@ -7,5 +7,4 @@
 <Spinner android:layout_below="@+id/txtInfo" android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/spnVoice"></Spinner>
 <TextView android:layout_below="@+id/spnVoice" android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/txtpad1" android:minLines="3" android:textSize="20sp"></TextView>
 <Button android:layout_height="wrap_content" android:id="@+id/bDownload" android:text="Download selected voice" android:textSize="20sp" android:layout_width="fill_parent" android:layout_below="@id/txtpad1"></Button>
-
 </RelativeLayout>

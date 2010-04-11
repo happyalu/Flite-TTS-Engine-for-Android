@@ -199,7 +199,10 @@ namespace FliteEngine {
 	    languageSupport = android::TTS_LANG_COUNTRY_AVAILABLE;
 	    path = path + "/" + fvar + ".cg.voxdata";
 	    if(file_exists(path))
-	      languageSupport = android::TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	      {
+		languageSupport = android::TTS_LANG_COUNTRY_VAR_AVAILABLE;
+		LOGV("%s is available",path.c_str());
+	      }
 	  }
 
       }

@@ -9,16 +9,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.AlertDialog.Builder;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -127,6 +124,13 @@ public class DownloadVoiceData extends Activity {
 		pd.setCancelable(true);
 		pd.setIndeterminate(true);
 		pd.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		pd.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel", new OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				fdload.abort();
+			}
+		});
 		pd.show();
 		
 		final Builder voicedownloadSuccessStatus = new AlertDialog.Builder(this);
@@ -150,14 +154,18 @@ public class DownloadVoiceData extends Activity {
     					pd.setMax(fdload.totalFileLength);
     				}
     			});
+    			int prev = 0;
     			while(!fdload.finished) {
-    				runOnUiThread(new Runnable() {
+    				if (fdload.finishedFileLength > prev) {
+    					prev = fdload.finishedFileLength;
+    					runOnUiThread(new Runnable() {
 
-    					@Override
-    					public void run() {
-    						pd.setProgress(fdload.finishedFileLength);
-    					}
-    				});
+        					@Override
+        					public void run() {
+        						pd.setProgress(fdload.finishedFileLength);
+        					}
+        				});
+    				}
     			}
     			runOnUiThread(new Runnable() {
 					
