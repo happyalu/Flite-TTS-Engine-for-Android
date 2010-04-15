@@ -96,17 +96,21 @@ public class CheckVoiceData extends Activity {
 			}
 		}
 		
-		/* Connect to CMU TTS server and get the list of voices available 
-		 * 
+		/* Connect to CMU TTS server and get the list of voices available, 
+		 * if we don't already have a file. 
 		 */
-		String voiceListURL = "http://tts.speech.cs.cmu.edu/android/general/voices.list";
 		String voiceListFile = FLITE_DATA_PATH+"cg/voices.list";
-		boolean savedVoiceList = Utility.saveUrlAsFile(voiceListURL, voiceListFile);
-		
-		if(!savedVoiceList)
-			Log.w("Flite.CheckVoiceData","Could not update voice list from server");
-		else
-			Log.w("Flite.CheckVoiceData","Successfully updated voice list from server");
+		if(!Utility.pathExists(voiceListFile)) {
+			Log.e("Flite.CheckVoiceData", "Voice list file doesn't exist. Try getting it from server.");
+			String voiceListURL = "http://tts.speech.cs.cmu.edu/android/general/voices.list?q=1";
+			
+			boolean savedVoiceList = Utility.saveUrlAsFile(voiceListURL, voiceListFile);
+			
+			if(!savedVoiceList)
+				Log.w("Flite.CheckVoiceData","Could not update voice list from server");
+			else
+				Log.w("Flite.CheckVoiceData","Successfully updated voice list from server");
+		}
 		
 		/* At this point, we MUST have a voices.list file. If this file is not there,
 		 * possibly because internet connection was not available, we must create a dummy
@@ -116,7 +120,7 @@ public class CheckVoiceData extends Activity {
 			try {
 				Log.w("Flite.CheckVoiceData", "Voice list not found, creating dummy list.");
 			    BufferedWriter out = new BufferedWriter(new FileWriter(FLITE_DATA_PATH+"cg/voices.list"));
-			    out.write("eng-USA-rms");
+			    out.write("eng-USA-male,rms");
 			    out.close();
 			} catch (IOException e) {
 				Log.e("Flite.CheckVoiceData", "Failed to create voice list dummy file.");
