@@ -47,7 +47,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <dir.h>
+#include <dirent.h>
 
 #define voxdir_path "/sdcard/flite-data"
 

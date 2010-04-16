@@ -161,6 +161,40 @@ namespace FliteEngine {
       }
   }
 
+  String get_default_variant_in_countrydir(String dirname)
+  {
+    DIR *dp;
+    struct dirent *ep;
+
+    dp = opendir(dirname.c_str());
+    if (dp == NULL)
+      {
+        LOGE("%s could not be opened.\n ",dirname.c_str());
+        return "";
+      }
+    else
+      {
+        while (ep = readdir(dp))
+          {
+            if(ep->d_type == DT_REG)
+              {
+                if(strstr(ep->d_name, "cg.voxdata") == ep->d_name+strlen(ep->d_name)-10)
+                  {
+		    char* tmp = new char[strlen(ep->d_name) - 10];
+		    strncpy(tmp, ep->d_name, strlen(ep->d_name) - 11);
+		    tmp[strlen(ep->d_name) - 11] = '\0';
+		    String ret = String(tmp);
+		    delete[] tmp;
+                    (void) closedir(dp);
+		    return ret;
+                  }
+              }
+          }
+      }
+    (void) closedir(dp);
+    return "";
+  }
+
   String get_default_country_in_languagedir(String dirname)
   {
     DIR *dp;
@@ -183,11 +217,13 @@ namespace FliteEngine {
 
             if(ep->d_type == DT_DIR)
               {
-		defaultVoice = get_default_cg_voice_in_countrydir(ep->d_name);
-		if (defaultVoice != "")
+		String dir = dirname + "/" + String(ep->d_name);
+		defaultVoice = get_default_variant_in_countrydir(dir);
+		if (!(defaultVoice == ""))
 		  {
+		    String ret = String(ep->d_name);
 		    (void) closedir(dp);
-		    return ep->d_name;
+		    return ret;
 		  }
               }
           }
@@ -195,37 +231,6 @@ namespace FliteEngine {
     (void) closedir(dp);
     return "";
   }
-
-
-  String get_default_cg_voice_in_countrydir(String dirname)
-  {
-    DIR *dp;
-    struct dirent *ep;
-
-    dp = opendir(dirname.c_str());
-    if (dp == NULL)
-      {
-        LOGE("%s could not be opened.\n ",dirname.c_str());
-        return "";
-      }
-    else
-      {
-        while (ep = readdir(dp))
-          {
-            if(ep->d_type == DT_REG)
-              {
-                if(strstr(ep->d_name, "cg.voxdata") == ep->d_name+strlen(ep->d_name)-10)
-                  {
-                    (void) closedir(dp);
-                    return String(ep->d_name);
-                  }
-              }
-          }
-      }
-    (void) closedir(dp);
-    return "";
-  }
-
 
   bool file_exists(String filename)
   {
@@ -246,12 +251,12 @@ namespace FliteEngine {
     String path = voxdir_path; 
     path = path + "/cg/" + flang;
     
-    if(get_default_country_in_languagedir(path)!= "")
+    if(!(get_default_country_in_languagedir(path)== ""))
       {
 	// language exists
 	languageSupport = android::TTS_LANG_AVAILABLE;
 	path = path + "/" + fcountry;
-	if(get_default_cg_voice_in_countrydir(path)!= "")
+	if(!(get_default_variant_in_countrydir(path)== ""))
 	  {
 	    // country exists
 	    languageSupport = android::TTS_LANG_COUNTRY_AVAILABLE;
@@ -279,20 +284,34 @@ namespace FliteEngine {
     if(languageSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
       {
 	path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.voxdata";
+	mLanguage = flang;
+	mCountry = fcountry;
+	mVariant = fvar;
+
 	LOGW("ClustergenVoice::setLanguage: Exact voice found.");
       }
     else if(languageSupport == android::TTS_LANG_COUNTRY_AVAILABLE)
       {
 	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language and country available.");
 	path = path + "/cg/" + flang + "/" + fcountry;
-	path = path + "/" + get_default_cg_voice_in_countrydir(path);
+	String var = get_default_variant_in_countrydir(path);
+	path = path + "/" + var + ".cg.voxdata";
+
+	mLanguage = flang;
+	mCountry = fcountry;
+	mVariant = var;
       }
     else if(languageSupport == android::TTS_LANG_AVAILABLE)
       {
 	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language available.");
 	path = path + "/cg/" + flang;
-	path = path + "/" + get_default_country_in_languagedir(path);
-	path = path + "/" + get_default_cg_voice_in_countrydir(path);
+	String country = get_default_country_in_languagedir(path);
+	path = path + "/" + country;
+	String var = get_default_variant_in_countrydir(path);
+	path = path + "/" + var + ".cg.voxdata";
+	mLanguage = flang;
+        mCountry = country;
+        mVariant = var;
       }
     else
       {
@@ -308,9 +327,6 @@ namespace FliteEngine {
 	LOGE("ClustergenVoice::setLanguage: Could not set language. File found but could not be loaded");
 	return android::TTS_FAILURE;
       }
-    mLanguage = flang;
-    mCountry = fcountry;
-    mVariant = fvar;
     
     // Print out voice information from the meta-data.
     const char* lang, *country, *gender, *age, *build_date, *desc;
@@ -541,6 +557,11 @@ namespace FliteEngine {
 	  ((LinkedVoice*)mCurrentVoice)->registerVoice();
 	return mCurrentVoice;
       }
-
+    else
+      {
+	LOGE("Voices::getVoiceForLocale: No voice could be used. Synthesis is NOT possible.");
+	mCurrentVoice = NULL;
+	return mCurrentVoice;
+      }
   }
 }
