@@ -164,13 +164,6 @@ namespace android {
   {
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
 
-    // We require a variant.
-    if(strcmp(variant,"")==0)
-      {
-	LOGE("TtsEngine::setLanguage: Unsupported variant of voice.");
-	return TTS_FAILURE;
-      }
-    
     // The hack to set streaming:
     // If language and country are not set, then variant will be 
     // interpreted as being "stream" or "nostream" to set the appropriate parameters.

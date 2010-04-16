@@ -161,13 +161,71 @@ namespace FliteEngine {
       }
   }
 
-  bool directory_exists(String dirname)
+  String get_default_country_in_languagedir(String dirname)
   {
-    struct stat file_info;
-    stat(dirname.c_str(), &file_info);
-    return S_ISDIR(file_info.st_mode);
-    
+    DIR *dp;
+    struct dirent *ep;
+    String defaultVoice;
+
+    dp = opendir(dirname.c_str());
+    if (dp == NULL)
+      {
+        LOGE("%s could not be opened.\n ",dirname.c_str());
+        return "";
+      }
+    else
+      {
+        while (ep = readdir(dp))
+          {
+            if(strcmp(ep->d_name,".") == 0 ||
+               strcmp(ep->d_name, "..") == 0 )
+              continue;
+
+            if(ep->d_type == DT_DIR)
+              {
+		defaultVoice = get_default_cg_voice_in_countrydir(ep->d_name);
+		if (defaultVoice != "")
+		  {
+		    (void) closedir(dp);
+		    return ep->d_name;
+		  }
+              }
+          }
+      }
+    (void) closedir(dp);
+    return "";
   }
+
+
+  String get_default_cg_voice_in_countrydir(String dirname)
+  {
+    DIR *dp;
+    struct dirent *ep;
+
+    dp = opendir(dirname.c_str());
+    if (dp == NULL)
+      {
+        LOGE("%s could not be opened.\n ",dirname.c_str());
+        return "";
+      }
+    else
+      {
+        while (ep = readdir(dp))
+          {
+            if(ep->d_type == DT_REG)
+              {
+                if(strstr(ep->d_name, "cg.voxdata") == ep->d_name+strlen(ep->d_name)-10)
+                  {
+                    (void) closedir(dp);
+                    return String(ep->d_name);
+                  }
+              }
+          }
+      }
+    (void) closedir(dp);
+    return "";
+  }
+
 
   bool file_exists(String filename)
   {
@@ -188,12 +246,12 @@ namespace FliteEngine {
     String path = voxdir_path; 
     path = path + "/cg/" + flang;
     
-    if(directory_exists(path))
+    if(get_default_country_in_languagedir(path)!= "")
       {
 	// language exists
 	languageSupport = android::TTS_LANG_AVAILABLE;
 	path = path + "/" + fcountry;
-	if(directory_exists(path))
+	if(get_default_cg_voice_in_countrydir(path)!= "")
 	  {
 	    // country exists
 	    languageSupport = android::TTS_LANG_COUNTRY_AVAILABLE;
@@ -204,7 +262,6 @@ namespace FliteEngine {
 		LOGV("%s is available",path.c_str());
 	      }
 	  }
-
       }
     return languageSupport;
   }
@@ -216,14 +273,33 @@ namespace FliteEngine {
     // If some voice is already loaded, unload it.
     unregisterVoice();
 
+    android::tts_support_result languageSupport = getLocaleSupport(flang, fcountry, fvar);
     String path = voxdir_path;
-    path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.voxdata";
 
-    if(!file_exists(path))
+    if(languageSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
       {
-	LOGE("ClustergenVoice::setLanguage: Could not set language. Language data file (%s)not available",path.c_str());
+	path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.voxdata";
+	LOGW("ClustergenVoice::setLanguage: Exact voice found.");
+      }
+    else if(languageSupport == android::TTS_LANG_COUNTRY_AVAILABLE)
+      {
+	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language and country available.");
+	path = path + "/cg/" + flang + "/" + fcountry;
+	path = path + "/" + get_default_cg_voice_in_countrydir(path);
+      }
+    else if(languageSupport == android::TTS_LANG_AVAILABLE)
+      {
+	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language available.");
+	path = path + "/cg/" + flang;
+	path = path + "/" + get_default_country_in_languagedir(path);
+	path = path + "/" + get_default_cg_voice_in_countrydir(path);
+      }
+    else
+      {
+	LOGE("ClustergenVoice::setLanguage: Voice not available.");
 	return android::TTS_FAILURE;
       }
+
     // Try to load the flite voice given the voxdata file
     mFliteVoice = register_cmu_us_generic_cg(path.c_str());
     
@@ -383,8 +459,7 @@ namespace FliteEngine {
 				   String fcountry, String fvar)
   {
     LOGI("Voices::getVoiceForLocale: language=%s country=%s variant=%s",flang.c_str(), fcountry.c_str(), fvar.c_str());
-    Voice* ptr;
-
+    
     /* Check that the voice we currently have set doesn't already
        provide what is requested.
     */
@@ -403,40 +478,68 @@ namespace FliteEngine {
 	mCurrentVoice->unregisterVoice();
       }
     mCurrentVoice = NULL;
-	
-    LOGD("Voices::getVoiceForLocale: Trying to find linked voices first");
+    
+    Voice* newVoice = NULL;
+    android::tts_support_result languageSupport = android::TTS_LANG_NOT_SUPPORTED;
+    android::tts_support_result currentSupport;
 
-    for(int i=0; i<mCurrentCount;i++)
+    /* First loop over the linked-in voices to gather best available voice. */
+
+    for(int i=0; i<mCurrentCount; i++)
       {
-	ptr = mVoiceList[i];
-	if(ptr->getLocaleSupport(flang, fcountry, fvar) == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+	if(mVoiceList[i] == NULL) continue;
+	currentSupport = mVoiceList[i]->getLocaleSupport(flang, fcountry, fvar);
+	if(languageSupport < currentSupport)
 	  {
-	    mCurrentVoice = ptr;
-	    break;
+	    // We found a better support for language than we previously had.
+	    newVoice = mVoiceList[i];
+	    languageSupport = currentSupport;
+	  }
+	if(languageSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+	  break; // No point in continuing search if best support is found.
+      }
+    LOGD("Voices::getVoiceForLocale: Linked voice support: %d.", languageSupport);
+
+    if(languageSupport < android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+      {
+	LOGD("Voices::getVoiceForLocale: Exact linked voice not found. Trying cg voices.");
+
+	/* Since we didn't find an exact match, 
+	 * we should now search in the clustergen voices. */
+	currentSupport = mCGVoice.getLocaleSupport(flang, fcountry, fvar); 
+	if(languageSupport <= currentSupport)
+	  {
+	    /* Clustergen has equal or better support. */
+	    LOGV("Voices::getVoiceForLocale: Clustergen voice has better support than linked voices.");
+	    
+	    android::tts_result result;
+	    result = mCGVoice.setLanguage(flang, fcountry, fvar);
+	    if(result == android::TTS_SUCCESS)
+	      {
+		LOGI("Voices::getVoiceForLocale: CG voice was found and set correctly.");
+		mCurrentVoice = &mCGVoice;
+		return mCurrentVoice;
+	      }
+	    else
+	      {
+		LOGE("Voices::getVoiceForLocale: CG voice could not be used. NO VOICE SET. Synthesis is NOT possible.");
+		mCurrentVoice = NULL; // Requested voice not available!
+		return mCurrentVoice;
+	      }
+	  }
+	else
+	  {
+	    /* Clustergen doesn't have better support. Go for whatever was previously found. */
 	  }
       }
-    if(mCurrentVoice != NULL)
+
+    if(newVoice != NULL)
       {
+	// Something was found in the linked voices.
+	mCurrentVoice = newVoice;
 	if(mRMode == ONLY_ONE_VOICE_REGISTERED)
 	  ((LinkedVoice*)mCurrentVoice)->registerVoice();
 	return mCurrentVoice;
-      }
-    LOGD("Voices::getVoiceForLocale: Linked voice unavailable. Trying to load CG voice off file");
-    
-    android::tts_result result;
-    result = mCGVoice.setLanguage(flang, fcountry, fvar);
-    if(result == android::TTS_SUCCESS)
-      {
-	LOGI("Voices::getVoiceForLocale: CG voice was found and set correctly.");
-	mCurrentVoice = &mCGVoice;
-	return mCurrentVoice;
-      }
-    else
-      {
-	LOGE("Voices::getVoiceForLocale: CG voice was also not found. NO VOICE SET. Synthesis is NOT possible.");
-	mCurrentVoice = NULL; // Requested voice not available!
-	return mCurrentVoice;
-
       }
 
   }
