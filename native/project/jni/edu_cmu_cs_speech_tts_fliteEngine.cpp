@@ -87,7 +87,7 @@ namespace android {
   
   /* Callback from flite. Should call back the TTS API */
   static int fliteCallback(const cst_wave *w, int start, int size,
-			   int last, void *userdata) 
+			   int last, cst_audio_streaming_info_struct *asi) 
   {
     int8_t *castedWave = (int8_t *) &w->samples[start];
     size_t bufferSize = size*sizeof(short);
@@ -99,9 +99,9 @@ namespace android {
     if(ttsSynthDoneCBPointer != NULL)
       {
 	if(last == 1)
-	  ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
+	  ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
 	else
-	  ttsSynthDoneCBPointer(userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
+	  ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
 	LOGI("flite callback processed!");
       }
     else
@@ -164,31 +164,6 @@ namespace android {
   {
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
 
-    // The hack to set streaming:
-    // If language and country are not set, then variant will be 
-    // interpreted as being "stream" or "nostream" to set the appropriate parameters.
-    // The default is to stream.
-    if((strcmp(lang,"")==0) && (strcmp(country,"")==0))
-      {
-	if(strcmp(variant, "stream") == 0)
-	  {
-	    LOGI("TtsEngine::setLanguage: TTS Streaming is ENABLED. Synthesis Benchmarks DISABLED.");
-	    ttsStream = 1;
-	    return TTS_SUCCESS;
-	  }
-	else if(strcmp(variant, "nostream")==0)
-	  {
-	    LOGI("TtsEngine::setLanguage: TTS Streaming is DISABLED. Synthesis Benchmarks ENABLED.");
-	    ttsStream = 0;
-	    return TTS_SUCCESS;
-	  }
-	else
-	  {
-	    LOGE("TtsEngine::setLanguage: Incorrect setting %s. If you don't specify language and country, variant should be 'stream' or 'nostream'",variant);
-	    return TTS_FAILURE;
-	  }
-      }
-    
     // Request the voice to voice-manager
     currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
     if(currentVoice == NULL)
@@ -209,6 +184,31 @@ namespace android {
                                                     const char *variant) 
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
+
+    // The hack to set streaming:
+    // If language and country are not set, then variant will be 
+    // interpreted as being "stream" or "nostream" to set the appropriate parameters.
+    // The default is to stream.
+    if((strcmp(lang,"")==0) && (strcmp(country,"")==0))
+      {
+	if(strcmp(variant, "stream") == 0)
+	  {
+	    LOGI("Streaming setting hack: TTS Streaming is ENABLED. Synthesis Benchmarks DISABLED.");
+	    ttsStream = 1;
+	    return TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	  }
+	else if(strcmp(variant, "nostream")==0)
+	  {
+	    LOGI("Streaming setting hack: TTS Streaming is DISABLED. Synthesis Benchmarks ENABLED.");
+	    ttsStream = 0;
+	    return TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	  }
+	else
+	  {
+	    LOGE("Streaming setting hack: Incorrect setting %s. If you don't specify language and country, variant should be 'stream' or 'nostream'",variant);
+	    return TTS_LANG_NOT_SUPPORTED;
+	  }
+      }
     
     return loadedVoices->isLocaleAvailable(lang, country, variant);
   }
