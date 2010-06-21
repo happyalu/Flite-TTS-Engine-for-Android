@@ -41,7 +41,7 @@
 #define __FliteEngine_Voices
 #include "edu_cmu_cs_speech_tts_String.hh"
 
-#include <include/flite.h>
+#include <flite.h>
 #include <tts/TtsEngine.h>
 
 #include <sys/stat.h>

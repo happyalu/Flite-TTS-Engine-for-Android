@@ -45,7 +45,7 @@
 #include <time.h>
 
 // Flite headers
-#include <include/flite.h>
+#include <flite.h>
 
 // Local headers
 #include "edu_cmu_cs_speech_tts_Common.hh"
