@@ -42,7 +42,7 @@
 #include "edu_cmu_cs_speech_tts_String.hh"
 
 #include <flite.h>
-#include <tts/TtsEngine.h>
+#include <tts/tts.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -87,7 +87,7 @@ namespace FliteEngine {
     bool isSameLocaleAs(String flang, String fcountry, String fvar);
     
     // Returns how far the language request is supported.
-    virtual android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar){return android::TTS_LANG_NOT_SUPPORTED;}
+    virtual android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar){return ANDROID_TTS_LANG_NOT_SUPPORTED;}
     
     virtual void unregisterVoice() {}
 };
@@ -113,7 +113,7 @@ namespace FliteEngine {
     cst_voice* registerVoice();
     void unregisterVoice();
     
-    android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar);
+    android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar);
 
   };
 
@@ -122,8 +122,8 @@ namespace FliteEngine {
     ClustergenVoice();
     ~ClustergenVoice();
     
-    android::tts_support_result getLocaleSupport(String flang, String fcountry, String fvar);
-    android::tts_result setLanguage(String flang, String fcountry, String fvar);
+    android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar);
+    android_tts_result_t setLanguage(String flang, String fcountry, String fvar);
     void unregisterVoice();
   };
 
@@ -150,7 +150,7 @@ namespace FliteEngine {
     void setDefaultVoice();
 
     // Find out if a particular locale is available.
-    android::tts_support_result isLocaleAvailable(String flang, String fcountry, String fvar);
+    android_tts_support_result_t isLocaleAvailable(String flang, String fcountry, String fvar);
 
     // Register and set the current voice to the one asked for
     Voice* getVoiceForLocale(String flang, String fcountry, String fvar);
