@@ -14,8 +14,6 @@
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG, __VA_ARGS__)
 
-namespace android 
-{
 static android_tts_synth_cb_t ttsSynthDoneCBPointer;
 static android_tts_engine_funcs_t functable;
 static android_tts_engine_t engine;
@@ -109,4 +107,13 @@ android_tts_engine_t *android_getTtsEngine()
 
   return &engine;
 }
+
+namespace android 
+{
+  android_tts_engine_t* getTtsEngine()
+  {
+    
+    LOGD("TtsEngine::getTtsEngine is called here!");
+    return android_getTtsEngine();
+  }
 }
