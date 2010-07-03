@@ -4,21 +4,15 @@
 #include <unistd.h>
 #include <time.h>
 
+#include <sys/types.h>
+#include <stdint.h>
+
 #include "tts/tts.h"
+#include "edu_cmu_cs_speech_tts_Common.hh"
 
-#include <android/log.h>
-#define LOG_TAG "FliteEngine"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , LOG_TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , LOG_TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG, __VA_ARGS__)
-
-namespace android 
-{
 static android_tts_synth_cb_t ttsSynthDoneCBPointer;
-static android_tts_engine_funcs_t functable;
-static android_tts_engine_t engine;
+static int ttsAbort = 0;
+static int ttsStream = 1;
 
 android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, const char *engineConfig)
 {
@@ -89,10 +83,13 @@ android_tts_result_t synthesizeText( void* engine, const char * text, int8_t * b
   return ANDROID_TTS_FAILURE;
 }
 
+static android_tts_engine_funcs_t functable;
+static android_tts_engine_t engine;
+
+
 android_tts_engine_t *android_getTtsEngine()
 {
-  LOGD("TtsEngine::getTtsEngine not called here!");
-
+  LOGD("TtsEngine::getTtsEngine");
   functable.init = init;
   functable.shutdown = shutdown;
   functable.stop = stop;
@@ -109,4 +106,7 @@ android_tts_engine_t *android_getTtsEngine()
 
   return &engine;
 }
-}
+
+
+
+
