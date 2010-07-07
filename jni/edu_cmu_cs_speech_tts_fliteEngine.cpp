@@ -372,5 +372,9 @@ android_tts_engine_t *getTtsEngine()
   return engine;
 }
 
+android_tts_engine_t *android_getTtsEngine() 
+{
+  return getTtsEngine();
+}
 
 

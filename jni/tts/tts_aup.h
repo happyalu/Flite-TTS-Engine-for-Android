@@ -85,12 +85,8 @@ typedef struct {
 /* This function must be located in the TTS Engine shared library
  * and must return the address of an android_tts_engine_t library.
  */
-extern android_tts_engine_t *android_getTtsEngine();
-
-/* Including the old version for legacy support.
- * This should return the same thing as android_getTtsEngine.
- */
-extern android_tts_engine_t *getTtsEngine();
+extern "C" android_tts_engine_t *android_getTtsEngine();
+extern "C" android_tts_engine_t *getTtsEngine();
 
 // A callback type used to notify the framework of new synthetized
 // audio samples, status will be SYNTH_DONE for the last sample of
