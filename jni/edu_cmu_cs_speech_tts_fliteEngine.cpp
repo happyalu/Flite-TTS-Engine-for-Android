@@ -43,6 +43,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 // Flite headers
 #include <flite.h>
@@ -78,17 +79,33 @@ namespace android {
 	return;
       }
     LOGI("setVoiceList: list initialized");
-    //loadedVoices->addVoice("eng","USA","rms-cg-me-18",&register_cmu_us_rms_me_18,&unregister_cmu_us_rms_me_18);
     LOGI("setVoiceList done");
   }
 
   /* END VOICE SPECIFIC CODE */
 
+#define sgn(x) (x>0?1:x?-1:0)
+
+  void compress(short *samples,int num_samples,float mu){
+    int i=0;
+    short limit = 30000;
+    short x;
+    for(i=0; i < num_samples; i++)
+      {
+	x=samples[i];
+	samples[i]=limit * (sgn(x)*(log(1+(mu/limit)*abs(x))/log(1+mu)));
+      }
+  }
   
   /* Callback from flite. Should call back the TTS API */
   static int fliteCallback(const cst_wave *w, int start, int size,
 			   int last, cst_audio_streaming_info_struct *asi) 
   {
+
+    short *waveSamples = (short *) &w->samples[start];
+    compress(waveSamples, size, 5);
+    LOGD("Compressing with 5");
+  
     int8_t *castedWave = (int8_t *) &w->samples[start];
     size_t bufferSize = size*sizeof(short);
     int num_channels = w->num_channels;
@@ -98,8 +115,25 @@ namespace android {
 
     if(ttsSynthDoneCBPointer != NULL)
       {
-	if(last == 1)
-	  ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
+	if(last == 1) 
+	  {
+	    /* Bug in audio rendering: Short utterances are not played. Fix it by playing silence in addition. */
+	    float dur = (start+size)/sample_rate;
+	    if(dur < 0.8) 
+	      {
+		// create padding
+		size_t padding_length = num_channels*(sample_rate/2);
+		int8_t* paddingWave = new int8_t[padding_length]; // Half a second
+		for(int i=0;i<(int)padding_length;i++) 
+		  paddingWave[i] = 0;
+		LOGE("Utterance too short. Adding padding to the output to workaround audio rendering bug.");
+		ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
+		ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, paddingWave, padding_length, TTS_SYNTH_DONE);
+		delete[] paddingWave;
+	      }
+	    else
+	      ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
+	  }
 	else
 	  ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
 	LOGI("flite callback processed!");
@@ -171,6 +205,13 @@ namespace android {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
 	return TTS_FAILURE;
       }
+    // Request the voice to voice-manager
+    currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
+    if(currentVoice == NULL)
+      {
+	LOGE("TtsEngine::setLanguage : Could not set voice");
+	return TTS_FAILURE;
+      }
     
     if(currentVoice->getFliteVoice() == NULL)
       return TTS_FAILURE;
@@ -219,7 +260,6 @@ namespace android {
     LOGI("TtsEngine::getLanguage");
     if(currentVoice == NULL)
       return TTS_FAILURE;
-
     strcpy(language, currentVoice->getLanguage());
     strcpy(country, currentVoice->getCountry());
     strcpy(variant, currentVoice->getVariant());
@@ -231,6 +271,25 @@ namespace android {
                                        int& channels)
   {
     LOGI("TtsEngine::setAudioFormat");
+    cst_voice* flite_voice;
+    if(currentVoice == NULL)
+      {
+        LOGE("Voices not loaded?");
+        return TTS_FAILURE;
+      }
+    flite_voice = currentVoice->getFliteVoice();
+    if(flite_voice == NULL)
+      {
+        LOGE("Voice not available");
+        return TTS_FAILURE;
+      }
+
+    rate = feat_int(flite_voice->features,"sample_rate");
+    LOGI("TtsEngine::setAudioFormat: setting Rate to %d",rate);
+
+    encoding = AudioSystem::PCM_16_BIT;
+    channels = 1;
+
     return TTS_FAILURE;
   }
 
@@ -312,6 +371,9 @@ namespace android {
 
         cst_wave* w = flite_text_to_wave(text, flite_voice);
 
+	compress(w->samples, w->num_samples, 5);
+	LOGD("Compressing with 5");
+
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
         // Calculate time difference
@@ -337,13 +399,14 @@ namespace android {
 
         size_t bufSize = w->num_samples * sizeof(short);
         int8_t* castedWave = (int8_t *)w->samples;
-	
+
 	if(ttsSynthDoneCBPointer!=NULL)
 	    ttsSynthDoneCBPointer(userdata, w->sample_rate, AudioSystem::PCM_16_BIT, w->num_channels, castedWave, bufSize, TTS_SYNTH_DONE);
 	else
 	  {
 	    LOGI("flite callback not processed because it's NULL!");
 	  }
+
         delete_wave(w);
 
         return TTS_SUCCESS;
