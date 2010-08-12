@@ -88,19 +88,19 @@ namespace FliteEngine {
     LOGI("Voice::~Voice: voice unregistered");
   }
   
-  android::tts_support_result LinkedVoice::getLocaleSupport(String flang, String fcountry, String fvar)
+  android_tts_support_result_t LinkedVoice::getLocaleSupport(String flang, String fcountry, String fvar)
   {
-    android::tts_support_result support = android::TTS_LANG_NOT_SUPPORTED;
+    android_tts_support_result_t support = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
     if(mLanguage == flang)
       {
-	support = android::TTS_LANG_AVAILABLE;
+	support = ANDROID_TTS_LANG_AVAILABLE;
 	if(mCountry == fcountry)
 	  {
-	    support = android::TTS_LANG_COUNTRY_AVAILABLE;
+	    support = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
 	    if(mVariant == fvar)
 	      {
-		support = android::TTS_LANG_COUNTRY_VAR_AVAILABLE;
+		support = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
 	      }
 	  }
       }
@@ -243,27 +243,27 @@ namespace FliteEngine {
   }
 
   // Check that the required clustergen file is present on disk and return the information.
-  android::tts_support_result ClustergenVoice::getLocaleSupport(String flang, String fcountry, String fvar)
+  android_tts_support_result_t ClustergenVoice::getLocaleSupport(String flang, String fcountry, String fvar)
   {
     LOGI("ClustergenVoice::getLocaleSupport for lang=%s country=%s var=%s",flang.c_str(), fcountry.c_str(), fvar.c_str());
 
-    android::tts_support_result languageSupport = android::TTS_LANG_NOT_SUPPORTED;
+    android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
     String path = voxdir_path; 
     path = path + "/cg/" + flang;
     
     if(!(get_default_country_in_languagedir(path)== ""))
       {
 	// language exists
-	languageSupport = android::TTS_LANG_AVAILABLE;
+	languageSupport = ANDROID_TTS_LANG_AVAILABLE;
 	path = path + "/" + fcountry;
 	if(!(get_default_variant_in_countrydir(path)== ""))
 	  {
 	    // country exists
-	    languageSupport = android::TTS_LANG_COUNTRY_AVAILABLE;
+	    languageSupport = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
 	    path = path + "/" + fvar + ".cg.voxdata";
 	    if(file_exists(path))
 	      {
-		languageSupport = android::TTS_LANG_COUNTRY_VAR_AVAILABLE;
+		languageSupport = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
 		LOGV("%s is available",path.c_str());
 	      }
 	  }
@@ -271,7 +271,7 @@ namespace FliteEngine {
     return languageSupport;
   }
 
-  android::tts_result ClustergenVoice::setLanguage(String flang, String fcountry, String fvar)
+  android_tts_result_t ClustergenVoice::setLanguage(String flang, String fcountry, String fvar)
   {
     LOGI("ClustergenVoice::setLanguage: lang=%s country=%s variant=%s",flang.c_str(), fcountry.c_str(), fvar.c_str());
 
@@ -281,16 +281,16 @@ namespace FliteEngine {
        (mVariant == fvar))
       {
 	LOGW("ClustergenVoice::setLanguage: Voice being requested is already registered. Doing nothing.");
-	return android::TTS_SUCCESS;
+	return ANDROID_TTS_SUCCESS;
       }
 
     // If some voice is already loaded, unload it.
     unregisterVoice();
 
-    android::tts_support_result languageSupport = getLocaleSupport(flang, fcountry, fvar);
+    android_tts_support_result_t languageSupport = getLocaleSupport(flang, fcountry, fvar);
     String path = voxdir_path;
 
-    if(languageSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+    if(languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
       {
 	path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.voxdata";
 	mLanguage = flang;
@@ -299,7 +299,7 @@ namespace FliteEngine {
 
 	LOGW("ClustergenVoice::setLanguage: Exact voice found.");
       }
-    else if(languageSupport == android::TTS_LANG_COUNTRY_AVAILABLE)
+    else if(languageSupport == ANDROID_TTS_LANG_COUNTRY_AVAILABLE)
       {
 	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language and country available.");
 	path = path + "/cg/" + flang + "/" + fcountry;
@@ -310,7 +310,7 @@ namespace FliteEngine {
 	mCountry = fcountry;
 	mVariant = var;
       }
-    else if(languageSupport == android::TTS_LANG_AVAILABLE)
+    else if(languageSupport == ANDROID_TTS_LANG_AVAILABLE)
       {
 	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language available.");
 	path = path + "/cg/" + flang;
@@ -325,7 +325,7 @@ namespace FliteEngine {
     else
       {
 	LOGE("ClustergenVoice::setLanguage: Voice not available.");
-	return android::TTS_FAILURE;
+	return ANDROID_TTS_FAILURE;
       }
 
     // Try to load the flite voice given the voxdata file
@@ -334,7 +334,7 @@ namespace FliteEngine {
     if(mFliteVoice == NULL)
       {
 	LOGE("ClustergenVoice::setLanguage: Could not set language. File found but could not be loaded");
-	return android::TTS_FAILURE;
+	return ANDROID_TTS_FAILURE;
       }
     mLanguage = flang;
     mCountry = fcountry;
@@ -357,7 +357,7 @@ namespace FliteEngine {
     LOGV("      Clustergen voice: Voice Build Date: %s",build_date);
     LOGV("      Clustergen voice: Voice Description: %s",desc);
 
-    return android::TTS_SUCCESS;
+    return ANDROID_TTS_SUCCESS;
   }
 
   Voices::Voices(int fmaxCount, VoiceRegistrationMode fregistrationMode)
@@ -428,8 +428,8 @@ namespace FliteEngine {
     // Try to load CMU_US_RMS_ME18. If it doesn't exist, 
     // then pick the first linked voice, whichever it is.
 
-    android::tts_result result = mCGVoice.setLanguage("eng","USA","cmu_us_rms_me18");
-    if(result == android::TTS_SUCCESS) 
+    android_tts_result_t result = mCGVoice.setLanguage("eng","USA","cmu_us_rms_me18");
+    if(result == ANDROID_TTS_SUCCESS) 
       {
 	mCurrentVoice = &mCGVoice;
 	return;
@@ -448,22 +448,22 @@ namespace FliteEngine {
 
   }
   
-  android::tts_support_result Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
+  android_tts_support_result_t Voices::isLocaleAvailable(String flang, String fcountry, String fvar)
   {
     LOGI("Voices::isLocaleAvailable");
 
     // First loop over the linked-in voices to see the locale match.
-    android::tts_support_result languageSupport = android::TTS_LANG_NOT_SUPPORTED;
-    android::tts_support_result currentSupport;
+    android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
+    android_tts_support_result_t currentSupport;
 
     for(int i=0;i<mCurrentCount;i++)
       {
 	if(mVoiceList[i] == NULL) continue;
 	currentSupport = mVoiceList[i]->getLocaleSupport(flang, fcountry, fvar);
-	if(currentSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+	if(currentSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
 	  {
 	    // We found a match, no need to loop any more.
-	    return android::TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	    return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
 	  }
 	else
 	  {
@@ -508,8 +508,8 @@ namespace FliteEngine {
     mCurrentVoice = NULL;
     
     Voice* newVoice = NULL;
-    android::tts_support_result languageSupport = android::TTS_LANG_NOT_SUPPORTED;
-    android::tts_support_result currentSupport;
+    android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
+    android_tts_support_result_t currentSupport;
 
     /* First loop over the linked-in voices to gather best available voice. */
 
@@ -523,12 +523,12 @@ namespace FliteEngine {
 	    newVoice = mVoiceList[i];
 	    languageSupport = currentSupport;
 	  }
-	if(languageSupport == android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+	if(languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
 	  break; // No point in continuing search if best support is found.
       }
     LOGD("Voices::getVoiceForLocale: Linked voice support: %d.", languageSupport);
 
-    if(languageSupport < android::TTS_LANG_COUNTRY_VAR_AVAILABLE)
+    if(languageSupport < ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
       {
 	LOGD("Voices::getVoiceForLocale: Exact linked voice not found. Trying cg voices.");
 
@@ -540,9 +540,9 @@ namespace FliteEngine {
 	    /* Clustergen has equal or better support. */
 	    LOGV("Voices::getVoiceForLocale: Clustergen voice has better support than linked voices.");
 	    
-	    android::tts_result result;
+	    android_tts_result_t result;
 	    result = mCGVoice.setLanguage(flang, fcountry, fvar);
-	    if(result == android::TTS_SUCCESS)
+	    if(result == ANDROID_TTS_SUCCESS)
 	      {
 		LOGI("Voices::getVoiceForLocale: CG voice was found and set correctly.");
 		mCurrentVoice = &mCGVoice;

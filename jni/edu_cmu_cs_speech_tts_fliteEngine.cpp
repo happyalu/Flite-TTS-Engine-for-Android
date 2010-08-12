@@ -53,17 +53,15 @@
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
 #include "edu_cmu_cs_speech_tts_String.hh"
 
-namespace android {
+static android_tts_synth_cb_t ttsSynthDoneCBPointer;
+static int ttsAbort = 0;
+static int ttsStream = 1;
+FliteEngine::Voices* loadedVoices;
+FliteEngine::Voice* currentVoice;
 
-  static synthDoneCB_t* ttsSynthDoneCBPointer;
-  static int ttsAbort = 0;
-  static int ttsStream = 1;
-  FliteEngine::Voices* loadedVoices;
-  FliteEngine::Voice* currentVoice;
-  
-  /* BEGIN VOICE SPECIFIC CODE */
+/* BEGIN VOICE SPECIFIC CODE */
 
-  // Declarations
+// Declarations
 
   void setVoiceList() {
     if(loadedVoices != NULL)
@@ -82,7 +80,7 @@ namespace android {
     LOGI("setVoiceList done");
   }
 
-  /* END VOICE SPECIFIC CODE */
+/* END VOICE SPECIFIC CODE */
 
 #define sgn(x) (x>0?1:x?-1:0)
 
@@ -127,15 +125,15 @@ namespace android {
 		for(int i=0;i<(int)padding_length;i++) 
 		  paddingWave[i] = 0;
 		LOGE("Utterance too short. Adding padding to the output to workaround audio rendering bug.");
-		ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
-		ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, paddingWave, padding_length, TTS_SYNTH_DONE);
+		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
+		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length, ANDROID_TTS_SYNTH_DONE);
 		delete[] paddingWave;
 	      }
 	    else
-	      ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_DONE);
+	      ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_DONE);
 	  }
 	else
-	  ttsSynthDoneCBPointer(asi->userdata, sample_rate, AudioSystem::PCM_16_BIT, num_channels, castedWave, bufferSize, TTS_SYNTH_PENDING);
+	  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
 	LOGI("flite callback processed!");
       }
     else
@@ -143,58 +141,59 @@ namespace android {
 	LOGE("flite callback not processed because it's NULL!");
 	ttsAbort = 1;
       }
+  
+  if(ttsAbort == 1)
+    return CST_AUDIO_STREAM_STOP;
+  
+  return CST_AUDIO_STREAM_CONT;
+}
 
-    if(ttsAbort == 1)
-      return CST_AUDIO_STREAM_STOP;
+// Initializes the TTS engine and returns whether initialization succeeded
+android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, const char *engineConfig)
+{
+  LOGI("TtsEngine::init start");
 
-    return CST_AUDIO_STREAM_CONT;
-  }
-
-  // Initializes the TTS engine and returns whether initialization succeeded
-  tts_result TtsEngine::init(synthDoneCB_t synthDoneCBPtr)
-  {
-    LOGI("TtsEngine::init start");
-    ttsSynthDoneCBPointer = synthDoneCBPtr;
-    flite_init();
-    setVoiceList();
-    if(loadedVoices == NULL)
-      {
-	LOGE("TTSEngine::init Could not load voice list");
-	return TTS_FAILURE;
-      }
-    currentVoice = loadedVoices->getCurrentVoice();
-    if(currentVoice == NULL)
-      {
-	LOGE("TTSEngine::init Voice list error");
-	return TTS_FAILURE;
-      }
-    if (currentVoice->getFliteVoice() == NULL) {
-      return TTS_FAILURE;
+  ttsSynthDoneCBPointer = synthDoneCBPtr;
+  flite_init();
+  setVoiceList();
+  if(loadedVoices == NULL)
+    {
+      LOGE("TTSEngine::init Could not load voice list");
+      return ANDROID_TTS_FAILURE;
     }
-    ttsAbort = 0;
-    LOGI("TtsEngine::init done");
-    return TTS_SUCCESS;
+  currentVoice = loadedVoices->getCurrentVoice();
+  if(currentVoice == NULL)
+    {
+      LOGE("TTSEngine::init Voice list error");
+      return ANDROID_TTS_FAILURE;
+    }
+  if (currentVoice->getFliteVoice() == NULL) {
+    return ANDROID_TTS_FAILURE;
+  }
+  ttsAbort = 0;
+  LOGI("TtsEngine::init done");
+  return ANDROID_TTS_SUCCESS;
   }
 
   // Shutsdown the TTS engine. Unload all voices
-  tts_result TtsEngine::shutdown( void )
+  android_tts_result_t shutdown(void* engine )
   {
     LOGI("TtsEngine::shutdown");
     if(loadedVoices != NULL)
       delete loadedVoices;
     loadedVoices = NULL;
-    return TTS_SUCCESS;
+    return ANDROID_TTS_SUCCESS;
   }
 
   // We load language when we set the language. Thus, this function always succeeds.
-  tts_result TtsEngine::loadLanguage(const char *lang, const char *country, const char *variant)
+  android_tts_result_t loadLanguage(void* engine, const char *lang, const char *country, const char *variant)
   {
     LOGI("TtsEngine::loadLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
-    return TTS_SUCCESS;
+    return ANDROID_TTS_SUCCESS;
   }
 
   // Set the language based on locale. We use our voices manager to do this job. 
-  tts_result TtsEngine::setLanguage( const char * lang, const char * country, const char * variant )
+  android_tts_result_t setLanguage( void* engine, const char * lang, const char * country, const char * variant )
   {
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
 
@@ -203,25 +202,25 @@ namespace android {
     if(currentVoice == NULL)
       {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
-	return TTS_FAILURE;
+	return ANDROID_TTS_FAILURE;
       }
     // Request the voice to voice-manager
     currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
     if(currentVoice == NULL)
       {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
-	return TTS_FAILURE;
+	return ANDROID_TTS_FAILURE;
       }
     
     if(currentVoice->getFliteVoice() == NULL)
-      return TTS_FAILURE;
+      return ANDROID_TTS_FAILURE;
     else
-      return TTS_SUCCESS; 
+      return ANDROID_TTS_SUCCESS; 
   }
 
   // Language availability check does not use the "streaming" byte, as in setLanguage
   // Also, check is made against the entire locale.
-  tts_support_result TtsEngine::isLanguageAvailable(const char *lang, const char *country,
+  android_tts_support_result_t isLanguageAvailable(void* engine, const char *lang, const char *country,
                                                     const char *variant) 
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
@@ -236,18 +235,18 @@ namespace android {
 	  {
 	    LOGI("Streaming setting hack: TTS Streaming is ENABLED. Synthesis Benchmarks DISABLED.");
 	    ttsStream = 1;
-	    return TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	    return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
 	  }
 	else if(strcmp(variant, "nostream")==0)
 	  {
 	    LOGI("Streaming setting hack: TTS Streaming is DISABLED. Synthesis Benchmarks ENABLED.");
 	    ttsStream = 0;
-	    return TTS_LANG_COUNTRY_VAR_AVAILABLE;
+	    return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
 	  }
 	else
 	  {
 	    LOGE("Streaming setting hack: Incorrect setting %s. If you don't specify language and country, variant should be 'stream' or 'nostream'",variant);
-	    return TTS_LANG_NOT_SUPPORTED;
+	    return ANDROID_TTS_LANG_NOT_SUPPORTED;
 	  }
       }
     
@@ -255,89 +254,90 @@ namespace android {
   }
 
   // Provide information about the currently set language.
-  tts_result TtsEngine::getLanguage(char *language, char *country, char *variant)
+  android_tts_result_t getLanguage(void* engine, char *language, char *country, char *variant)
   {
     LOGI("TtsEngine::getLanguage");
     if(currentVoice == NULL)
-      return TTS_FAILURE;
+      return ANDROID_TTS_FAILURE;
+
     strcpy(language, currentVoice->getLanguage());
     strcpy(country, currentVoice->getCountry());
     strcpy(variant, currentVoice->getVariant());
-    return TTS_SUCCESS;
+    return ANDROID_TTS_SUCCESS;
   }
 
   // Setting Audio Format is not supported by Flite Engine.
-  tts_result TtsEngine::setAudioFormat(AudioSystem::audio_format& encoding, uint32_t& rate,
-                                       int& channels)
+  android_tts_result_t setAudioFormat(void* engine, android_tts_audio_format_t* encoding, uint32_t* rate,
+                                       int* channels)
   {
     LOGI("TtsEngine::setAudioFormat");
     cst_voice* flite_voice;
     if(currentVoice == NULL)
       {
         LOGE("Voices not loaded?");
-        return TTS_FAILURE;
+        return ANDROID_TTS_FAILURE;
       }
     flite_voice = currentVoice->getFliteVoice();
     if(flite_voice == NULL)
       {
         LOGE("Voice not available");
-        return TTS_FAILURE;
+        return ANDROID_TTS_FAILURE;
       }
 
-    rate = feat_int(flite_voice->features,"sample_rate");
+    *rate = feat_int(flite_voice->features,"sample_rate");
     LOGI("TtsEngine::setAudioFormat: setting Rate to %d",rate);
 
-    encoding = AudioSystem::PCM_16_BIT;
-    channels = 1;
+    *encoding = ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT;
+    *channels = 1;
 
-    return TTS_FAILURE;
+    return ANDROID_TTS_FAILURE;
   }
 
   // Properties are not yet implemented.
-  tts_result TtsEngine::setProperty(const char *property, const char *value,
+  android_tts_result_t setProperty(void* engine, const char *property, const char *value,
                                     const size_t size)
   {
     LOGW("TtsEngine::setProperty is unimplemented");
-    return TTS_PROPERTY_UNSUPPORTED; 
+    return ANDROID_TTS_PROPERTY_UNSUPPORTED; 
     // Other values hint: TTS_VALUE_INVALID, TTS_SUCCESS
   }
 
   //Properties are not yet implemented.
-  tts_result TtsEngine::getProperty(const char *property, char *value, size_t *iosize)
+  android_tts_result_t getProperty(void* engine, const char *property, char *value, size_t *iosize)
   {
     LOGW("TtsEngine::getProperty is unimplemented");
-    return TTS_PROPERTY_UNSUPPORTED;
+    return ANDROID_TTS_PROPERTY_UNSUPPORTED;
   }
 
   // Support for synthesizing IPA text is not implemented.
-  tts_result TtsEngine::synthesizeIpa( const char * ipa, int8_t * buffer, size_t bufferSize, void * userdata )
+  android_tts_result_t synthesizeIpa( void* engine, const char * ipa, int8_t * buffer, size_t bufferSize, void * userdata )
   {
     LOGI("TtsEngine::synthesizeIpa");
-    return TTS_FAILURE;
+    return ANDROID_TTS_FAILURE;
   }
 
   // Interrupts synthesis.
-  tts_result TtsEngine::stop()
+  android_tts_result_t stop(void* engine)
   {
     LOGI("TtsEngine::stop");
     ttsAbort = 1;
-    return TTS_SUCCESS;
+    return ANDROID_TTS_SUCCESS;
   }
 
   // Synthesize Text. Check if streaming is requested, and stream iff so.
-  tts_result TtsEngine::synthesizeText( const char * text, int8_t * buffer, size_t bufferSize, void * userdata )
+  android_tts_result_t synthesizeText( void* engine, const char * text, int8_t * buffer, size_t bufferSize, void * userdata )
   {
     cst_voice* flite_voice;
     if(currentVoice == NULL)
       {	
         LOGE("Voices not loaded?");
-        return TTS_FAILURE;
+        return ANDROID_TTS_FAILURE;
       }
     flite_voice = currentVoice->getFliteVoice();
     if(flite_voice == NULL)
       {
 	LOGE("Voice not available");
-	return TTS_FAILURE;
+	return ANDROID_TTS_FAILURE;
       }
     
     LOGI("TtsEngine::synthesizeText: text=%s, bufferSize=%lu", text, (unsigned long) bufferSize);
@@ -359,7 +359,7 @@ namespace android {
         feat_remove(flite_voice->features, "streaming_info");
 
         LOGI("Done flite synthesis.");
-        return TTS_SUCCESS;
+        return ANDROID_TTS_SUCCESS;
       }
     else
       {
@@ -401,7 +401,7 @@ namespace android {
         int8_t* castedWave = (int8_t *)w->samples;
 
 	if(ttsSynthDoneCBPointer!=NULL)
-	    ttsSynthDoneCBPointer(userdata, w->sample_rate, AudioSystem::PCM_16_BIT, w->num_channels, castedWave, bufSize, TTS_SYNTH_DONE);
+	    ttsSynthDoneCBPointer(&userdata, w->sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, w->num_channels, &castedWave, &bufSize, ANDROID_TTS_SYNTH_DONE);
 	else
 	  {
 	    LOGI("flite callback not processed because it's NULL!");
@@ -409,17 +409,36 @@ namespace android {
 
         delete_wave(w);
 
-        return TTS_SUCCESS;
+        return ANDROID_TTS_SUCCESS;
       }
   }
   
   // Function to get TTS Engine
-  TtsEngine* getTtsEngine()
-  {
-    LOGI("TtsEngine::getTtsEngine");
-    return new TtsEngine();
-  }
+android_tts_engine_t *getTtsEngine()
+{
+  LOGI("TtsEngine::getTtsEngine");
+  
+  android_tts_engine_t* engine;
+  engine = (android_tts_engine_t*) malloc(sizeof(android_tts_engine_t));
+  android_tts_engine_funcs_t* functable = (android_tts_engine_funcs_t*) malloc(sizeof(android_tts_engine_funcs_t));
+  functable->init = &init;
+  functable->shutdown = &shutdown;
+  functable->stop = &stop;
+  functable->isLanguageAvailable = &isLanguageAvailable;
+  functable->loadLanguage = &loadLanguage;
+  functable->setLanguage = &setLanguage;
+  functable->getLanguage = &getLanguage;
+  functable->setAudioFormat = &setAudioFormat;
+  functable->setProperty = &setProperty;
+  functable->getProperty = &getProperty;
+  functable->synthesizeText = &synthesizeText;
+  engine->funcs = functable;
+  return engine;
+}
 
+android_tts_engine_t *android_getTtsEngine() 
+{
+  return getTtsEngine();
 }
 
 
