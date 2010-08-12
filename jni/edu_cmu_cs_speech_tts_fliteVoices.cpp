@@ -275,6 +275,15 @@ namespace FliteEngine {
   {
     LOGI("ClustergenVoice::setLanguage: lang=%s country=%s variant=%s",flang.c_str(), fcountry.c_str(), fvar.c_str());
 
+    // But check that the current voice itself isn't being requested.
+    if((mLanguage == flang) &&
+       (mCountry == fcountry) &&
+       (mVariant == fvar))
+      {
+	LOGW("ClustergenVoice::setLanguage: Voice being requested is already registered. Doing nothing.");
+	return android::TTS_SUCCESS;
+      }
+
     // If some voice is already loaded, unload it.
     unregisterVoice();
 
@@ -327,6 +336,9 @@ namespace FliteEngine {
 	LOGE("ClustergenVoice::setLanguage: Could not set language. File found but could not be loaded");
 	return android::TTS_FAILURE;
       }
+    mLanguage = flang;
+    mCountry = fcountry;
+    mVariant = fvar;
     
     // Print out voice information from the meta-data.
     const char* lang, *country, *gender, *age, *build_date, *desc;
