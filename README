@@ -8,32 +8,20 @@ available from Google.
 
 This distribution contains the native code and Java wrapper for
 FliteEngine. Source code to compile Flite and the voices is not included here,
-but you can download it from www.cmuflite.org.  
+but you can download "flite" from www.cmuflite.org.  
 
 To compile this project, you need to build the native part first, then build
 the Java project.
 
-The native code part, which resides in Application.mk and project/...,
+The native code part, which resides in jni/...,
 must be built with the Android NDK:
 
-   unzip android-ndk.zip
-   cd android-ndk
+ ~$  export FLITEDIR=/path/to/flite
+ ~$  export ANDROID_NDK=/path/to/ANDROID_NDK_R4
 
-   cd apps
-   ln -s /path/to/FliteEngine/native ./FliteEngine
-   cd ..
-
-   ./build/host-setup.sh
-
-   make APP=FliteEngine
-
-This will generate a file
-
-   project/libs/armeabi/liblibttsfliteengine.so
-
-which should be copied to
-
-   libs/armeabi/libttsfliteengine.so
+ ~$  $ANDROID_NDK/ndk-build
 
 The Java part, which resides in AndroidManifest.xml and in src/...,
 can be built using the ant script.
+
+ ~$ ant debug
