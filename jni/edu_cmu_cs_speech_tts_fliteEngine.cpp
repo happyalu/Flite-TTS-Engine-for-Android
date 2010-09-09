@@ -102,14 +102,14 @@ FliteEngine::Voice* currentVoice;
 
     short *waveSamples = (short *) &w->samples[start];
     compress(waveSamples, size, 5);
-    LOGD("Compressing with 5");
+    LOGV("Compressing with 5");
   
     int8_t *castedWave = (int8_t *) &w->samples[start];
     size_t bufferSize = size*sizeof(short);
     int num_channels = w->num_channels;
     int sample_rate = w->sample_rate;
     
-    LOGI("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
+    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
 
     if(ttsSynthDoneCBPointer != NULL)
       {
@@ -134,7 +134,7 @@ FliteEngine::Voice* currentVoice;
 	  }
 	else
 	  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
-	LOGI("flite callback processed!");
+	LOGV("flite callback processed!");
       }
     else
       {
@@ -354,8 +354,39 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
         feat_set(flite_voice->features,
                  "streaming_info",
                  audio_streaming_info_val(asi));
-        cst_utterance *u = flite_synth_text(text,flite_voice);
-        delete_utterance(u);
+
+	/* SSML support */
+	if(!strncmp(text, "<?xml version=\"1.0\"?>", 21))
+	  {
+	    LOGE("TtsEngine: Using SSML mode for %s", text);
+	    // XML string given. Parse as SSML.
+
+	    // For now, just strip off all tags and say whatever remains.
+	    int pos1=0, pos2=0; 
+	    int maxpos = strlen(text);
+
+	    char* textOverride = (char*)text;
+
+	    while(pos2<maxpos) 
+	      {
+		while((pos2<maxpos) && (textOverride[pos2] != '<'))
+		  {
+		    textOverride[pos1] = textOverride[pos2];
+		    pos1++;
+		    pos2++;
+		  }
+		while((pos2<maxpos) && (textOverride[pos2] != '>'))
+		  {
+		    pos2++;
+		  }
+	      }
+	    textOverride[pos1] = '\0';			    
+	    	    
+	  }
+
+	cst_utterance *u = flite_synth_text(text,flite_voice);
+	delete_utterance(u);
+      
         feat_remove(flite_voice->features, "streaming_info");
 
         LOGI("Done flite synthesis.");
@@ -372,7 +403,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
         cst_wave* w = flite_text_to_wave(text, flite_voice);
 
 	compress(w->samples, w->num_samples, 5);
-	LOGD("Compressing with 5");
+	LOGV("Compressing with 5");
 
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
