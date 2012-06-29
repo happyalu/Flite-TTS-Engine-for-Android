@@ -8,14 +8,12 @@ Requirements:
 ------------
 (1) On the Phone:
 
-      - Android 1.6 -- 2.1 WITH "TTS Extended" app from google installed
-        	      	     	     *OR*
-        Android 2.2 WITHOUT "TTS Extended" app from google.
+        Android 2.3.3 or later
 
 (2) On your computer, to build this application:
-      - Flite 1.4.2 or later,	    
-      - Android NDK Release 4
-      - Android SDK
+      - Flite 1.5.6 or later,	    
+      - Android NDK Release 8
+      - Android SDK Release 20
 
 -------------------------
 Building this application:
@@ -35,14 +33,14 @@ Building this application:
 
 (1) Build Flite with android support enabled.
 
-      cd /path/to/flite-1.4.2
+      cd /path/to/flite-1.5.6
       ./configure --with-langvox=android --target=arm-android
       make
 
 (2) Export necessary environment variables.
 
       export FLITEDIR=/path/to/flite
-      export ANDROID_NDK=/path/to/android-ndk-r4
+      export ANDROID_NDK=/path/to/android-ndk-r8
       export ANDROID_SDK=/path/to/android-sdk
 
 (3) Build the native code in this application.
@@ -70,12 +68,7 @@ Installing this application:
       $ANDROID_SDK/tools/adb install \
           $FLITEDIR/android/app_code/bin/FliteEngine-debug.apk
 
-(3) Open Text To Speech Settings:
-    (a) Android 1.6 -- 2.1:
-          Open "TTS Service" application
-
-    (b) Android 2.2 or later:
-          Menu -> Settings -> Voice Input and Output -> TTS Settings
+(3) Open Text To Speech Settings
 
 (4) Scroll down to the bottom and enable Flite.
 

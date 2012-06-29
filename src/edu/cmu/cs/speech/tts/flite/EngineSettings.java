@@ -60,7 +60,7 @@ public class EngineSettings extends PreferenceActivity implements Preference.OnP
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
 		        WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
 		
-		addPreferencesFromResource(R.xml.engine_settings);
+		addPreferencesFromResource(R.xml.preferences);
 		initClickers();
 		
 			

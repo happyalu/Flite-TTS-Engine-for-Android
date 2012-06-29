@@ -4,6 +4,8 @@
     <string name="app_name">Flite Engine</string>
 
     <string name="eng_sample">This is a sample English sentence for Flite synthesizer.</string>
-<string name="sync_voice_list">Live update</string>
-<string name="sync_voice_list_summary">Download information about latest supported languages</string>
+    <string name="tts_settings">General TTS settings</string>
+
+    <string name="sync_voice_list">Live update</string>
+    <string name="sync_voice_list_summary">Download information about latest supported languages</string>
 </resources>
