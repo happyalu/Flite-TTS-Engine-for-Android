@@ -104,8 +104,11 @@ public class CheckVoiceData extends Activity {
 		if(!Utility.pathExists(voiceListFile)) {
 			Log.e("Flite.CheckVoiceData", "Voice list file doesn't exist. Try getting it from server.");
 			String voiceListURL = "http://tts.speech.cs.cmu.edu/android/vox-flite-1.5.6/voices.list?q=1";
-			
-			boolean savedVoiceList = Utility.saveUrlAsFile(voiceListURL, voiceListFile);
+
+                        FileDownloader fdload = new FileDownloader();
+                        fdload.saveUrlAsFile(voiceListURL, voiceListFile);
+                        while(!fdload.finished) {}
+			boolean savedVoiceList = fdload.success;
 			
 			if(!savedVoiceList)
 				Log.w("Flite.CheckVoiceData","Could not update voice list from server");
