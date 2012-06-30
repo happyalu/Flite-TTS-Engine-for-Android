@@ -38,29 +38,24 @@
 /*                                                                       */
 /*************************************************************************/
 
-#ifndef __FliteEngine_String
-#define __FliteEngine_String
+#ifndef JNI_EDU_CMU_CS_SPEECH_TTS_STRING_H_
+#define JNI_EDU_CMU_CS_SPEECH_TTS_STRING_H_
 #include<stdlib.h>
 
 namespace FliteEngine {
 
-  class String
-  {
-  private:
-    char* strdata;
-  public:
-    String(const char* str=NULL);
-    String(const String& rhs);
-    ~String();
+class String {
+ private:
+  char* strdata;
+ public:
+  String(const char* str = NULL);  // NOLINT : Explicit constructor okay.
+  String(const String& rhs);
+  ~String();
 
-    String& operator=(const String &rhs);
-    bool operator==(const String &other) const;
-
-    String operator+(const String &other);
-    
-    const char* c_str();
-    
-  };
-
+  String& operator=(const String &rhs);
+  bool operator==(const String &other) const;
+  String operator+(const String &other);
+  const char* c_str();
+};
 }
-#endif
+#endif  // JNI_EDU_CMU_CS_SPEECH_TTS_STRING_H_

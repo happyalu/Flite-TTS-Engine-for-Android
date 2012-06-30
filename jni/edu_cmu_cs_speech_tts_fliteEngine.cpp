@@ -51,7 +51,7 @@
 // Local headers
 #include "edu_cmu_cs_speech_tts_Common.hh"
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
-#include "edu_cmu_cs_speech_tts_String.hh"
+#include "edu_cmu_cs_speech_tts_String.h"
 
 static android_tts_synth_cb_t ttsSynthDoneCBPointer;
 static int ttsAbort = 0;

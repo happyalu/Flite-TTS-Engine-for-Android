@@ -38,99 +38,81 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include "edu_cmu_cs_speech_tts_String.hh"
+#include "./edu_cmu_cs_speech_tts_String.h"
 #include<string.h>
 #include<stdio.h>
 
 namespace FliteEngine {
 
-  String::String(const char* str)
-  {
-    if(str!=NULL)
-      {
-	
-	strdata = new char[strlen(str)+1];
-	if(strdata != NULL)
-	  strcpy(strdata, str);
-      }
-    else
-      {
-	strdata = NULL;
-      }
+String::String(const char* str) {
+  if (str != NULL) {
+    strdata = new char[strlen(str) + 1];
+    if (strdata != NULL)
+      snprintf(strdata, strlen(str) + 1, "%s", str);
+  } else {
+    strdata = NULL;
   }
+}
 
-  String::String(const String& rhs)
-  {
-    if(rhs.strdata == NULL)
-      strdata = NULL;
-    else {
-      strdata = new char[strlen(rhs.strdata)+1];
-      if(strdata != NULL)
-	strcpy(strdata, rhs.strdata);
-    }
+String::String(const String& rhs) {
+  if (rhs.strdata == NULL) {
+    strdata = NULL;
+  } else {
+    strdata = new char[strlen(rhs.strdata)+1];
+    if (strdata != NULL)
+      snprintf(strdata, strlen(rhs.strdata) + 1, "%s", rhs.strdata);
   }
+}
 
-  String::~String()
-  {
-    if(strdata != NULL)
-      {
-	delete[] strdata;
-      }
+String::~String() {
+  if (strdata != NULL) {
+    delete[] strdata;
   }
+}
 
-  String& String::operator=(const String &rhs)
-  {
-    // Don't assign if rhs is the same object!
-    if(this != &rhs)
-      {
-	if(strdata != NULL)
-	  delete[] strdata;
+String& String::operator=(const String &rhs) {
+  // Don't assign if rhs is the same object!
+  if (this != &rhs) {
+    if (strdata != NULL)
+      delete[] strdata;
+    strdata = new char[strlen(rhs.strdata)+1];
+    if (strdata != NULL)
+      snprintf(strdata, strlen(rhs.strdata) + 1, "%s", rhs.strdata);
+  }
+  return *this;
+}
 
-	strdata = new char[strlen(rhs.strdata)+1];
-	if(strdata != NULL)
-	strcpy(strdata, rhs.strdata);
-      }
+String String::operator+(const String &other) {
+  int newlength;
+  char* s;
+
+  if (strdata == NULL)
+    return other;
+
+  if (other.strdata == NULL)
     return *this;
-  }
 
+  newlength = strlen(strdata) + strlen(other.strdata) + 1;
 
-  String String::operator+(const String &other)
-  {
-    int newlength;
-    char* s;
+  s = new char[newlength];
+  snprintf(s, newlength, "%s%s", strdata, other.strdata);
 
-    if(strdata == NULL)
-      return other;
+  String addedStr = String(s);
+  delete[] s;
+  return addedStr;
+}
 
-    if(other.strdata == NULL)
-      return *this;
-
-    newlength = strlen(strdata) + strlen(other.strdata) + 1;
-
-    s = new char[newlength];
-    strcpy(s, strdata);
-    strcat(s, other.strdata);
-
-    String addedStr = String(s);
-    delete[] s;
-    return addedStr;
-
-  }
-
-
-  bool String::operator==(const String &other) const
-  {
-    if( (strdata == NULL) or (other.strdata == NULL) )
+bool String::operator==(const String &other) const {
+    if ( (strdata == NULL) or (other.strdata == NULL) )
       return false;
 
-    if(strcmp(strdata, other.strdata)==0) 
+    if (strcmp(strdata, other.strdata) == 0)
       return true;
-    else return false;
- }
-
-  const char* String::c_str()
-  {
-    return strdata;
-  }
-
+    else
+      return false;
 }
+
+const char* String::c_str() {
+    return strdata;
+}
+}  // End Namespace

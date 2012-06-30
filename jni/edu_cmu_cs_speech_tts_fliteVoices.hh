@@ -39,7 +39,7 @@
 /*************************************************************************/
 #ifndef __FliteEngine_Voices
 #define __FliteEngine_Voices
-#include "edu_cmu_cs_speech_tts_String.hh"
+#include "edu_cmu_cs_speech_tts_String.h"
 
 #include <flite.h>
 #include <tts/tts.h>
