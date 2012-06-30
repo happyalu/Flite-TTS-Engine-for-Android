@@ -36,107 +36,62 @@
 
 package edu.cmu.cs.speech.tts.flite;
 
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.ArrayList;
-
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.media.AudioFormat;
+import android.speech.tts.SynthesisCallback;
+import android.speech.tts.SynthesisRequest;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeechService;
 import android.util.Log;
 
-public class FileDownloader {
-	public int totalFileLength = 0;
-	public int finishedFileLength;
-	
-	public boolean abortDownload;
-	public boolean finished;
-	public boolean success;
-	
-	public void saveUrlAsFile(final String url, final String filename) {
-		finished = false;
-		success = false;
-		new Thread() {
-			public void run() {
-				save(url, filename);
-			}
-		}.start();
-	}
-		
-	private boolean save(String url, String filename) {
-    	try {
-    		//TODO (aup): Improve the exception handling. This is cruel.
-    		
-    		abortDownload = false;
-    		
-    		Log.v("Flite.FileDownloader","Trying to save "+url+" as "+filename);
-    		URL u = new URL(url);
-    		URLConnection uc = u.openConnection();
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 
-                uc.setDoInput(true);
-                uc.setDoOutput(true);
-                uc.getOutputStream();
-                
-    		int contentLength = uc.getContentLength();
+/**
+ * Implements the Flite Engine as a TextToSpeechService
+ *
+ */
 
-    		totalFileLength = contentLength;
-    		finishedFileLength = 0;
+public class FliteTtsService extends TextToSpeechService {
+  @Override
+  public void onCreate() {
+    super.onCreate();
+  }
 
-                InputStream raw = uc.getInputStream();
-    		InputStream in = new BufferedInputStream(raw,256);
+  @Override
+  protected String[] onGetLanguage() {
+    Log.v("FliteTtsService", "onGetLanguage");
+    return new String[] {"", "", ""};
+  }
 
-                List<Byte> data = new ArrayList<Byte>();
+  @Override
+  protected int onIsLanguageAvailable(String language, String country, String variant) {
+    Log.v("FliteTtsService", "onIsLanguageAvailable");
+    return TextToSpeech.LANG_NOT_SUPPORTED;
+  }
 
-    		int nextByte = 0;
+  @Override
+  protected int onLoadLanguage(String language, String country, String variant) {
+    Log.v("FliteTtsService", "onLoadLanguage");
+    return TextToSpeech.LANG_NOT_SUPPORTED;
+  }
 
-    		while (nextByte != -1) {
-                  nextByte = in.read();
-                  if (nextByte == -1)
-                    break;    			
-                  finishedFileLength += 1;
-                  data.add((byte)nextByte);
-                  
-                  if(abortDownload)
-                    break;
-    		}
+  @Override
+  protected void onStop() {
+    Log.v("FliteTtsService", "onStop");
+  }
 
-    		in.close();
-
-    		if(abortDownload) {
-    			Log.e("Flite.FileDownloader", "File download aborted by user");
-    			success = false;
-    			finished = true;
-    			return false;
-    		}
-    		
-    		if ((contentLength > 0) && (finishedFileLength != contentLength)) {
-    			throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
-    		}
-
-
-    		FileOutputStream out = new FileOutputStream(filename);
-                byte[] alldata = new byte[data.size()];
-                for(int i=0; i< alldata.length; i++) {
-                  alldata[i] = (byte) data.get(i);
-                }
-    		out.write(alldata);
-    		out.flush();
-    		out.close();
-    		finished = true;
-    		success = true;
-    		return true;
-    	}
-    	catch (Exception e) {
-    		Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
-    		finished = true;
-    		return false;
-    	}
-    }
-
-	public void abort() {
-		abortDownload = true;
-	}
-	
+  @Override
+  protected synchronized void onSynthesizeText(
+      SynthesisRequest request, SynthesisCallback callback) {
+    Log.v("FliteTtsService", "onSynthesize");
+  }
+  
 }

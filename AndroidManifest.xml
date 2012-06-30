@@ -5,7 +5,7 @@
 	  android:installLocation="preferExternal">
   <uses-sdk 
       android:minSdkVersion="8" 
-      android:targetSdkVersion="10" />
+      android:targetSdkVersion="16" />
   
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.INTERNET" />
@@ -60,7 +60,6 @@
       </intent-filter>
     </activity>
 -->
-
     <activity 
 	android:name=".TtsSettingsActivity" 
 	android:label="@string/tts_settings">

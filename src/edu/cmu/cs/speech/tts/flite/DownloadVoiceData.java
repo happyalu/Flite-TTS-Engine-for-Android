@@ -116,11 +116,14 @@ public class DownloadVoiceData extends Activity {
 				Log.e("Flite.CheckVoiceData","Incorrect voicename:" + s);
 				continue;
 			}
-			String voxdatafile = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.voxdata";
+			String voxdatafile = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox";
 			if(!Utility.pathExists(voxdatafile)) {
 				// We need to install this voice.
 				Locale loc = new Locale(voiceParams[0],voiceParams[1],voiceParams[2]);
-				mVoiceDescList.add(loc.getDisplayLanguage() + " (" + loc.getDisplayCountry() + ", " + loc.getDisplayVariant() + ")");
+
+				mVoiceDescList.add(loc.getDisplayLanguage() +
+                                                   " (" + loc.getISO3Country() + ", " +
+                                                   loc.getVariant() + ")");
 				mVoiceList.add(s);
 			}
 		}
@@ -173,8 +176,8 @@ public class DownloadVoiceData extends Activity {
 		voicedownloadSuccessStatus.setPositiveButton("Ok",null);
 				
 		
-		final String url = "http://tts.speech.cs.cmu.edu/android/general/"+selectedVoice+".voxdata";
-		final String filename = datapath + "/" + voiceParams[2] + ".cg.voxdata";
+		final String url = "http://tts.speech.cs.cmu.edu/android/vox-flite-1.5.6/"+selectedVoice+".flitevox";
+		final String filename = datapath + "/" + voiceParams[2] + ".cg.flitevox";
     	new Thread() {
     		public void run() { 
     			fdload.saveUrlAsFile(url, filename);

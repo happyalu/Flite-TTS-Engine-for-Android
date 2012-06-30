@@ -40,31 +40,49 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
+
+import java.util.Locale;
 
 /*
  * Returns the sample text string for the language requested
  */
 public class GetSampleText extends Activity {
     
-    @Override
-	public void onCreate(Bundle savedInstanceState) {
-	super.onCreate(savedInstanceState);
-	
-	int result = TextToSpeech.LANG_AVAILABLE;
-	Intent returnData = new Intent();
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
 
-	Intent i = getIntent();
-	String language = i.getExtras().getString("language");
-	
-	if (language.equals("eng")) {
-	    returnData.putExtra("sampleText", getString(R.string.eng_sample));
-	} else {
-	    result = TextToSpeech.LANG_NOT_SUPPORTED;
-	    returnData.putExtra("sampleText", "");
-	}
-	
-	setResult(result, returnData);	
+    final Locale locale = getLocaleFromIntent(getIntent());
 
-	finish();
+    final String language = (locale == null) ? "eng" : locale.getISO3Language();
+        
+    int result = TextToSpeech.LANG_AVAILABLE;
+    Intent returnData = new Intent();
+
+    if (language.equals("eng")) {
+      returnData.putExtra("sampleText", getString(R.string.eng_sample));
+      Log.v("Flite.GetSampleText", "Returned SampleText: " + getString(R.string.eng_sample));
+    } else {
+      Log.v("Flite.GetSampleText", "Unsupported Language: " + language);
+      result = TextToSpeech.LANG_NOT_SUPPORTED;
+      returnData.putExtra("sampleText", "");
     }
+	
+    setResult(result, returnData);	
+
+    finish();
+  }
+
+  private static Locale getLocaleFromIntent(Intent intent) {
+    if (intent != null) {
+      final String language = intent.getStringExtra("language");
+
+      if (language != null) {
+        return new Locale(language);
+      }
+    }
+
+    return Locale.getDefault();
+  }
 }  
