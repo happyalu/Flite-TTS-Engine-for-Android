@@ -109,7 +109,6 @@ public class TtsSettingsActivity extends PreferenceActivity implements Preferenc
             @Override
             public void run() {
               if(fdload.totalFileLength > 0) {
-                //mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 mProgress.setIndeterminate(false);
                 mProgress.setMax(fdload.totalFileLength);
               }

@@ -48,88 +48,88 @@ import java.util.ArrayList;
 import android.util.Log;
 
 public class FileDownloader {
-	public int totalFileLength = 0;
-	public int finishedFileLength;
+  public int totalFileLength = 0;
+  public int finishedFileLength;
 	
-	public boolean abortDownload;
-	public boolean finished;
-	public boolean success;
+  public boolean abortDownload;
+  public boolean finished;
+  public boolean success;
 	
-	public void saveUrlAsFile(final String url, final String filename) {
-		finished = false;
-		success = false;
-		new Thread() {
-			public void run() {
-				save(url, filename);
-			}
-		}.start();
-	}
+  public void saveUrlAsFile(final String url, final String filename) {
+    finished = false;
+    success = false;
+    new Thread() {
+      public void run() {
+        save(url, filename);
+      }
+    }.start();
+  }
 		
-	private boolean save(String url, String filename) {
-    	try {
-    		//TODO (aup): Improve the exception handling. This is cruel.
+  private boolean save(String url, String filename) {
+    try {
+      //TODO (aup): Improve the exception handling. This is cruel.
     		
-    		abortDownload = false;
+      abortDownload = false;
     		
-    		Log.v("Flite.FileDownloader","Trying to save "+url+" as "+filename);
-    		URL u = new URL(url);
-    		URLConnection uc = u.openConnection();
+      Log.v("Flite.FileDownloader","Trying to save "+url+" as "+filename);
+      URL u = new URL(url);
+      URLConnection uc = u.openConnection();
 
-                uc.setDoInput(true);
-                uc.setDoOutput(true);
-                uc.getOutputStream();
+      uc.setDoInput(true);
+      uc.setDoOutput(true);
+      uc.getOutputStream();
                 
-    		int contentLength = uc.getContentLength();
+      int contentLength = uc.getContentLength();
 
-    		totalFileLength = contentLength;
-    		finishedFileLength = 0;
+      totalFileLength = contentLength;
+      finishedFileLength = 0;
 
-                InputStream raw = uc.getInputStream();
-    		InputStream in = new BufferedInputStream(raw,256);
-    		FileOutputStream out = new FileOutputStream(filename);
+      InputStream raw = uc.getInputStream();
+      InputStream in = new BufferedInputStream(raw,256);
+      FileOutputStream out = new FileOutputStream(filename);
 
-    		int nextByte = 0;
+      int nextByte = 0;
 
-    		while (nextByte != -1) {
-                  nextByte = in.read();
-                  if (nextByte == -1)
-                    break;    			
-                  finishedFileLength += 1;
-                  out.write((byte)nextByte);
-                  if(abortDownload)
-                    break;
-    		}
-                Log.v("Flite.FileDownloader", "FinishedFileLength: " + finishedFileLength);
-    		in.close();
+      while (nextByte != -1) {
+        nextByte = in.read();
+        if (nextByte == -1)
+          break;    			
+        finishedFileLength += 1;
+        out.write((byte)nextByte);
+        if(abortDownload)
+          break;
+      }
+      Log.v("Flite.FileDownloader", "FinishedFileLength: " + finishedFileLength);
+      in.close();
 
-                out.flush();
-                out.close();
+      out.flush();
+      out.close();
                 
-    		if(abortDownload) {
-    			Log.e("Flite.FileDownloader", "File download aborted by user");
-    			success = false;
-    			finished = true;
-                        new java.io.File(filename).delete();
-    			return false;
-    		}
+      if(abortDownload) {
+        Log.e("Flite.FileDownloader", "File download aborted by user");
+        success = false;
+        finished = true;
+        new java.io.File(filename).delete();
+        return false;
+      }
     		
-    		if ((contentLength > 0) && (finishedFileLength != contentLength)) {
-    			throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
-    		}
+      if ((contentLength > 0) && (finishedFileLength != contentLength)) {
+        throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
+      }
                 
-    		finished = true;
-    		success = true;
-    		return true;
-    	}
-    	catch (Exception e) {
-    		Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
-    		finished = true;
-    		return false;
-    	}
+      finished = true;
+      success = true;
+      return true;
     }
+    catch (Exception e) {
+      Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
+      finished = true;
+      return false;
+    }
+  }
 
-	public void abort() {
-		abortDownload = true;
-	}
+  public void abort() {
+    abortDownload = true;
+  }
 	
 }
