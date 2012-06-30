@@ -52,14 +52,6 @@
       </intent-filter>
     </activity>
     
-<!--
-    <activity android:name=".EngineSettings" android:label="@string/app_name">
-      <intent-filter>
-	<action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
--->
     <activity 
 	android:name=".TtsSettingsActivity" 
 	android:label="@string/tts_settings">
@@ -71,6 +63,19 @@
 
 
     <!-- Legacy Code for pre-ICS compatibility -->
+
+    <activity-alias
+	android:enabled="true"
+	android:name=".EngineSettings"
+	android:label="@string/app_name"
+	android:targetActivity=".TtsSettingsActivity" >
+      <intent-filter>
+        <action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity-alias>
+
+
     <activity 
 	android:enabled="true" 
 	android:name=".Flite"
