@@ -74,6 +74,7 @@ public class CheckVoiceData extends Activity {
 		 * There should be a "cg" folder inside the flite data directory
 		 * which will store all the clustergen voice data files.
 		 */
+
 		if(!Utility.pathExists(FLITE_DATA_PATH+"cg")) {
 			// Create the directory.
 			Log.e("Flite.CheckVoiceData", "Flite data directory missing. Trying to create it.");
@@ -95,7 +96,7 @@ public class CheckVoiceData extends Activity {
 				finish();
 			}
 		}
-		
+
 		/* Connect to CMU TTS server and get the list of voices available, 
 		 * if we don't already have a file. 
 		 */
@@ -111,7 +112,7 @@ public class CheckVoiceData extends Activity {
 			else
 				Log.w("Flite.CheckVoiceData","Successfully updated voice list from server");
 		}
-		
+
 		/* At this point, we MUST have a voices.list file. If this file is not there,
 		 * possibly because internet connection was not available, we must create a dummy
 		 * 
@@ -130,7 +131,7 @@ public class CheckVoiceData extends Activity {
 				finish();
 			}
 		}
-
+                Log.v("Flite.CheckVoiceData", "HERE");				
 		/* Go through each line in voices.list file and see
 		 * if the data for that voice is installed.
 		 */
@@ -166,7 +167,8 @@ public class CheckVoiceData extends Activity {
 	}
     
     private boolean voiceAvailable(String[] voiceParams) {
-    	String voxdataFileName = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.voxdata";
+      Log.v("Flite.CheckVoiceData", "Checking for Voice Available" + voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox");
+    	String voxdataFileName = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox";
     	return Utility.pathExists(voxdataFileName);
     }
     

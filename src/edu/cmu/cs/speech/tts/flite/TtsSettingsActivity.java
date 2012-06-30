@@ -84,7 +84,7 @@ public class TtsSettingsActivity extends PreferenceActivity implements Preferenc
     mProgress = new ProgressDialog(this);
     mProgress.setCancelable(true);
     mProgress.setIndeterminate(true);
-    mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+    mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     mProgress.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel", new ProgressDialog.OnClickListener() {
 			
         @Override
@@ -109,7 +109,7 @@ public class TtsSettingsActivity extends PreferenceActivity implements Preferenc
             @Override
             public void run() {
               if(fdload.totalFileLength > 0) {
-                mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                //mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 mProgress.setIndeterminate(false);
                 mProgress.setMax(fdload.totalFileLength);
               }
@@ -118,7 +118,7 @@ public class TtsSettingsActivity extends PreferenceActivity implements Preferenc
         int prev = 0;
         while(!fdload.finished) {
           if (fdload.totalFileLength == -1) continue;
-          if (fdload.finishedFileLength > prev) {
+          if (fdload.finishedFileLength - prev > 10000) {
             prev = fdload.finishedFileLength;
             runOnUiThread(new Runnable() {
 

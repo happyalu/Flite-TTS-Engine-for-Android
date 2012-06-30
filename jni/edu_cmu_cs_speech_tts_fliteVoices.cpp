@@ -178,11 +178,11 @@ namespace FliteEngine {
           {
             if(ep->d_type == DT_REG)
               {
-                if(strstr(ep->d_name, "cg.voxdata") == ep->d_name+strlen(ep->d_name)-10)
+                if(strstr(ep->d_name, "cg.flitevox") == ep->d_name+strlen(ep->d_name)-11)
                   {
-		    char* tmp = new char[strlen(ep->d_name) - 10];
-		    strncpy(tmp, ep->d_name, strlen(ep->d_name) - 11);
-		    tmp[strlen(ep->d_name) - 11] = '\0';
+		    char* tmp = new char[strlen(ep->d_name) - 11];
+		    strncpy(tmp, ep->d_name, strlen(ep->d_name) - 12);
+		    tmp[strlen(ep->d_name) - 12] = '\0';
 		    String ret = String(tmp);
 		    delete[] tmp;
                     (void) closedir(dp);
@@ -250,17 +250,20 @@ namespace FliteEngine {
     android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
     String path = voxdir_path; 
     path = path + "/cg/" + flang;
-    
+    LOGV("Path: %s", path.c_str());
     if(!(get_default_country_in_languagedir(path)== ""))
       {
 	// language exists
 	languageSupport = ANDROID_TTS_LANG_AVAILABLE;
 	path = path + "/" + fcountry;
+        LOGV("Path: %s", path.c_str());
 	if(!(get_default_variant_in_countrydir(path)== ""))
 	  {
+            LOGV("Path: %s", path.c_str());
 	    // country exists
 	    languageSupport = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
-	    path = path + "/" + fvar + ".cg.voxdata";
+	    path = path + "/" + fvar + ".cg.flitevox";
+            LOGV("Path: %s", path.c_str());
 	    if(file_exists(path))
 	      {
 		languageSupport = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
@@ -292,7 +295,7 @@ namespace FliteEngine {
 
     if(languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
       {
-	path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.voxdata";
+	path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.flitevox";
 	mLanguage = flang;
 	mCountry = fcountry;
 	mVariant = fvar;
@@ -304,7 +307,7 @@ namespace FliteEngine {
 	LOGW("ClustergenVoice::setLanguage: Exact voice not found. Only Language and country available.");
 	path = path + "/cg/" + flang + "/" + fcountry;
 	String var = get_default_variant_in_countrydir(path);
-	path = path + "/" + var + ".cg.voxdata";
+	path = path + "/" + var + ".cg.flitevox";
 
 	mLanguage = flang;
 	mCountry = fcountry;
@@ -317,7 +320,7 @@ namespace FliteEngine {
 	String country = get_default_country_in_languagedir(path);
 	path = path + "/" + country;
 	String var = get_default_variant_in_countrydir(path);
-	path = path + "/" + var + ".cg.voxdata";
+	path = path + "/" + var + ".cg.flitevox";
 	mLanguage = flang;
         mCountry = country;
         mVariant = var;
@@ -329,13 +332,20 @@ namespace FliteEngine {
       }
 
     // Try to load the flite voice given the voxdata file
-    mFliteVoice = register_cmu_us_generic_cg(path.c_str());
+    
+    // old way
+    //mFliteVoice = register_cmu_us_generic_cg(path.c_str());
+
+    // new since fLite 1.5.6
+    mFliteVoice = flite_voice_load(path.c_str());
     
     if(mFliteVoice == NULL)
       {
 	LOGE("ClustergenVoice::setLanguage: Could not set language. File found but could not be loaded");
 	return ANDROID_TTS_FAILURE;
-      }
+      } else {
+      LOGE("ClustergenVoice::setLanguage: Voice Loaded in Flite");
+    }
     mLanguage = flang;
     mCountry = fcountry;
     mVariant = fvar;

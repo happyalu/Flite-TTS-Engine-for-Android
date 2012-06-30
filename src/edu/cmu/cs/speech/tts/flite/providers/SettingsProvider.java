@@ -34,102 +34,74 @@
 /*               Date:  April 2010                                       */
 /*************************************************************************/
 
-package edu.cmu.cs.speech.tts.flite;
+package edu.cmu.cs.speech.tts.flite.providers;
 
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.ArrayList;
 
-import android.util.Log;
+import edu.cmu.cs.speech.tts.flite.CheckVoiceData;
 
-public class FileDownloader {
-	public int totalFileLength = 0;
-	public int finishedFileLength;
-	
-	public boolean abortDownload;
-	public boolean finished;
-	public boolean success;
-	
-	public void saveUrlAsFile(final String url, final String filename) {
-		finished = false;
-		success = false;
-		new Thread() {
-			public void run() {
-				save(url, filename);
-			}
-		}.start();
-	}
-		
-	private boolean save(String url, String filename) {
-    	try {
-    		//TODO (aup): Improve the exception handling. This is cruel.
-    		
-    		abortDownload = false;
-    		
-    		Log.v("Flite.FileDownloader","Trying to save "+url+" as "+filename);
-    		URL u = new URL(url);
-    		URLConnection uc = u.openConnection();
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.net.Uri;
 
-                uc.setDoInput(true);
-                uc.setDoOutput(true);
-                uc.getOutputStream();
-                
-    		int contentLength = uc.getContentLength();
+import java.io.File;
 
-    		totalFileLength = contentLength;
-    		finishedFileLength = 0;
+/**
+ * Provides the "engineConfig" parameter for the legacy (pre-ICS) TTS API.
+ */
+public class SettingsProvider extends ContentProvider {
+  private class SettingsCursor extends MatrixCursor {
+    private String settings;
 
-                InputStream raw = uc.getInputStream();
-    		InputStream in = new BufferedInputStream(raw,256);
-    		FileOutputStream out = new FileOutputStream(filename);
-
-    		int nextByte = 0;
-
-    		while (nextByte != -1) {
-                  nextByte = in.read();
-                  if (nextByte == -1)
-                    break;    			
-                  finishedFileLength += 1;
-                  out.write((byte)nextByte);
-                  if(abortDownload)
-                    break;
-    		}
-                Log.v("Flite.FileDownloader", "FinishedFileLength: " + finishedFileLength);
-    		in.close();
-
-                out.flush();
-                out.close();
-                
-    		if(abortDownload) {
-    			Log.e("Flite.FileDownloader", "File download aborted by user");
-    			success = false;
-    			finished = true;
-                        new java.io.File(filename).delete();
-    			return false;
-    		}
-    		
-    		if ((contentLength > 0) && (finishedFileLength != contentLength)) {
-    			throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
-    		}
-                
-    		finished = true;
-    		success = true;
-    		return true;
-    	}
-    	catch (Exception e) {
-    		Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
-    		finished = true;
-    		return false;
-    	}
+    public SettingsCursor(String[] columnNames) {
+      super(columnNames);
     }
 
-	public void abort() {
-		abortDownload = true;
-	}
-	
+    public void putSettings(String settings) {
+      this.settings = settings;
+    }
+
+            @Override
+            public int getCount() {
+              return 1;
+            }
+
+            @Override
+            public String getString(int column) {
+              return settings;
+            }
+  }
+
+      @Override
+      public int delete(Uri uri, String selection, String[] selectionArgs) {
+        return 0;
+      }
+
+      @Override
+      public String getType(Uri uri) {
+        return null;
+      }
+
+      @Override
+      public Uri insert(Uri uri, ContentValues values) {
+        return null;
+      }
+
+      @Override
+      public boolean onCreate() {
+        return true;
+      }
+
+      @Override
+      public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
+                          String sortOrder) {
+        return null;
+      }
+
+      @Override
+      public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        return 0;
+      }
+
 }

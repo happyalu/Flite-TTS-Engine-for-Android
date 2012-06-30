@@ -87,5 +87,9 @@
 	<category android:name="android.intent.category.tts_lang.eng.USA" />
       </intent-filter>
     </activity>
+
+    <provider
+            android:name="edu.cmu.cs.speech.tts.flite.providers.SettingsProvider"
+            android:authorities="edu.cmu.cs.speech.tts.flite.providers.SettingsProvider" />
   </application>
 </manifest> 
