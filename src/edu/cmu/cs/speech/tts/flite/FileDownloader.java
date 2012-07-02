@@ -88,14 +88,15 @@ public class FileDownloader {
       InputStream in = new BufferedInputStream(raw,256);
       FileOutputStream out = new FileOutputStream(filename);
 
-      int nextByte = 0;
-
-      while (nextByte != -1) {
-        nextByte = in.read();
-        if (nextByte == -1)
+      int bytesRead = 0;
+      byte[] data = new byte[256];
+      
+      while (bytesRead != -1) {
+        bytesRead = in.read(data, 0, 256);
+        if (bytesRead == -1)
           break;    			
-        finishedFileLength += 1;
-        out.write((byte)nextByte);
+        finishedFileLength += bytesRead;
+        out.write(data, 0, bytesRead);
         if(abortDownload)
           break;
       }
