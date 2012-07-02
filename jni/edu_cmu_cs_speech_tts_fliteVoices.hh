@@ -51,10 +51,6 @@
 
 #define voxdir_path "/sdcard/flite-data"
 
-// Generic CG voice
-extern "C" cst_voice* register_cmu_us_generic_cg(const char *voxdir);
-extern "C" void unregister_cmu_us_generic_cg(cst_voice* voice);
-
 namespace FliteEngine {
   // Function pointer type for flite_register_voice
   typedef cst_voice* (*t_voice_register_function)(const char*);

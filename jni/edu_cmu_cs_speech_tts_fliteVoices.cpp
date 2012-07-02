@@ -150,10 +150,13 @@ namespace FliteEngine {
   {
     if(mFliteVoice != NULL)
       {
-        // We have something loaded in there. Let's unregister it.
-        LOGD("Calling flite's unregister for cg voice");
-        unregister_cmu_us_generic_cg(mFliteVoice);
-        LOGD("Flite voice unregistered.");
+        // TODO: Flite 1.5.6 does not support unregistering a linked voice.
+        // We do nothing here, but there is potential memory issue.
+        
+        LOGD("Should be Calling flite's unregister for cg voice, but can't in this version.");
+
+        // cst_cg_unload_voice(mFliteVoice);
+        // LOGD("Flite voice unregistered.");
         mFliteVoice = NULL;
 	mLanguage = "";
 	mCountry = "";
@@ -332,9 +335,6 @@ namespace FliteEngine {
       }
 
     // Try to load the flite voice given the voxdata file
-    
-    // old way
-    //mFliteVoice = register_cmu_us_generic_cg(path.c_str());
 
     // new since fLite 1.5.6
     mFliteVoice = flite_voice_load(path.c_str());
@@ -435,10 +435,10 @@ namespace FliteEngine {
 	  mCurrentVoice = NULL;
 	}
 
-    // Try to load CMU_US_RMS_ME18. If it doesn't exist, 
+    // Try to load CMU_US_RMS. If it doesn't exist, 
     // then pick the first linked voice, whichever it is.
 
-    android_tts_result_t result = mCGVoice.setLanguage("eng","USA","cmu_us_rms_me18");
+    android_tts_result_t result = mCGVoice.setLanguage("eng","USA","male,rms");
     if(result == ANDROID_TTS_SUCCESS) 
       {
 	mCurrentVoice = &mCGVoice;
