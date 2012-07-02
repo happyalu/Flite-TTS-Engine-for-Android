@@ -27,6 +27,7 @@ file from the Github page and install it on your device. Devices
 running Android versions 2.2 (Froyo) or later are supported.
 
 After installing this application, you will have to:
+
 1. Enable Flite from "Text to Speech Settings" on your phone
 2. Install voice data
 3. Go to "Language" settings and select the voice that you want.
@@ -60,14 +61,14 @@ In order to build this application, you need the following:
 Application Build Steps
 -----------------------
 
-*Export necessary environment variables*
+*Export necessary environment variables* ::
 
     export FLITEDIR=/path/to/flite-1.5.6
     export FLITE_APP_DIR=/path/to/this/application
     export ANDROID_NDK=/path/to/android/ndk
     export ANDROID_SDK=/path/to/android/sdk
 
-*Build Flite Engine for multiple architectures*
+*Build Flite Engine for multiple architectures* ::
 
     cd $FLITEDIR
     ./configure --with-langvox=android --target=armeabi-android
@@ -79,14 +80,13 @@ Application Build Steps
     ./configure --with-langvox=android --target=mips-android
     make
 
-*Build JNI code in this app's code*
+*Build JNI code in this app's code* ::
 
     cd $FLITE_APP_DIR
     $ANDROID_NDK/ndk-build
 
-*Build installable application package (debug mode)*
+*Build installable application package (debug mode)* ::
 
     cd $FLITE_APP_DIR
     ant debug
-
 
