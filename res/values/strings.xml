@@ -8,4 +8,5 @@
 
     <string name="sync_voice_list">Live update</string>
     <string name="sync_voice_list_summary">Download information about latest supported languages</string>
+    <string name="flite_manager">Flite Manager</string>
 </resources>

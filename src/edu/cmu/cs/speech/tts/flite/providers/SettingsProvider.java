@@ -37,42 +37,15 @@
 package edu.cmu.cs.speech.tts.flite.providers;
 
 
-import edu.cmu.cs.speech.tts.flite.CheckVoiceData;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.net.Uri;
-
-import java.io.File;
 
 /**
  * Provides the "engineConfig" parameter for the legacy (pre-ICS) TTS API.
  */
 public class SettingsProvider extends ContentProvider {
-  private class SettingsCursor extends MatrixCursor {
-    private String settings;
-
-    public SettingsCursor(String[] columnNames) {
-      super(columnNames);
-    }
-
-    public void putSettings(String settings) {
-      this.settings = settings;
-    }
-
-    @Override
-    public int getCount() {
-      return 1;
-    }
-
-    @Override
-    public String getString(int column) {
-      return settings;
-    }
-  }
-
   @Override
   public int delete(Uri uri, String selection, String[] selectionArgs) {
     return 0;

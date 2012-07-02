@@ -1,95 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	  package="edu.cmu.cs.speech.tts.flite" android:versionCode="2"
-	  android:versionName="2.0"
-	  android:installLocation="preferExternal">
-  <uses-sdk 
-      android:minSdkVersion="8" 
-      android:targetSdkVersion="16" />
-  
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.INTERNET" />
-  
-  <application 
-      android:icon="@drawable/icon" 
-      android:label="@string/app_name" >
-    <service android:name=".FliteTtsService"
-	     android:label="@string/app_name">
-      <intent-filter>
-	<action android:name="android.intent.action.TTS_SERVICE" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-      <meta-data android:name="android.speech.tts" android:resource="@xml/tts_engine" />
-    </service>
+    package="edu.cmu.cs.speech.tts.flite"
+    android:installLocation="preferExternal"
+    android:versionCode="2"
+    android:versionName="2.0" >
 
-    <activity 
-	android:name=".DownloadVoiceData" 
-	android:label="@string/app_name" 
-	android:theme="@android:style/Theme.Dialog" >
-      <intent-filter>
-	<action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
-    
-    <activity 
-	android:name=".CheckVoiceData" 
-	android:label="@string/app_name"
-	android:theme="@android:style/Theme.Translucent.NoTitleBar">
-      <intent-filter>
-	<action android:name="android.speech.tts.engine.CHECK_TTS_DATA" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
-    
-    <activity 
-	android:name=".GetSampleText" 
-	android:label="@string/app_name"
-	android:theme="@android:style/Theme.Translucent.NoTitleBar">
-      <intent-filter>
-	<action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
-    
-    <activity 
-	android:name=".TtsSettingsActivity" 
-	android:label="@string/tts_settings">
-      <intent-filter>
-	<action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
-	<category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity>
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="16" />
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <!-- Legacy Code for pre-ICS compatibility -->
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name" >
+        <service
+            android:name=".FliteTtsService"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
 
-    <activity-alias
-	android:enabled="true"
-	android:name=".EngineSettings"
-	android:label="@string/app_name"
-	android:targetActivity=".TtsSettingsActivity" >
-      <intent-filter>
-        <action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
-        <category android:name="android.intent.category.DEFAULT" />
-      </intent-filter>
-    </activity-alias>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
 
+            <meta-data
+                android:name="android.speech.tts"
+                android:resource="@xml/tts_engine" />
+        </service>
 
-    <activity 
-	android:enabled="true" 
-	android:name=".Flite"
-	android:label="@string/app_name" 
-	android:theme="@android:style/Theme.Translucent.NoTitleBar">
-      <intent-filter>
-	<action android:name="android.intent.action.START_TTS_ENGINE" />
-	<category android:name="android.intent.category.tts_engine.FLITE" />
-	<category android:name="android.intent.category.tts_lang.eng.USA" />
-      </intent-filter>
-    </activity>
+        <activity
+            android:name="FliteManager"
+            android:enabled="true"
+            android:label="@string/flite_manager"
+            android:launchMode="standard" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-    <provider
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action android:name="android.speech.tts.engine.CONFIGURE_ENGINE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".DownloadVoiceData"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Dialog" >
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".CheckVoiceData"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.CHECK_TTS_DATA" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GetSampleText"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Legacy Code for pre-ICS compatibility -->
+
+        <activity
+            android:name=".Flite"
+            android:enabled="true"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.START_TTS_ENGINE" />
+
+                <category android:name="android.intent.category.tts_engine.FLITE" />
+                <category android:name="android.intent.category.tts_lang.eng.USA" />
+            </intent-filter>
+        </activity>
+
+        <provider
             android:name="edu.cmu.cs.speech.tts.flite.providers.SettingsProvider"
             android:authorities="edu.cmu.cs.speech.tts.flite.providers.SettingsProvider" />
-  </application>
-</manifest> 
+
+        <activity-alias
+            android:name=".TtsSettingsActivity"
+            android:targetActivity=".FliteManager" />
+        <activity-alias
+            android:name=".EngineSettings"
+            android:targetActivity=".FliteManager" />
+    </application>
+
+</manifest>

@@ -36,23 +36,11 @@
 
 package edu.cmu.cs.speech.tts.flite;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.media.AudioFormat;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
 import android.util.Log;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Implements the Flite Engine as a TextToSpeechService
