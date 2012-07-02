@@ -1,6 +1,12 @@
 LOCAL_PATH:= $(call my-dir)
 
-FLITE_LIB_DIR:= $(FLITEDIR)/build/arm-android/lib
+FLITE_BUILD_SUBDIR:=$(TARGET_ARCH_ABI)
+
+ifeq "$(TARGET_ARCH_ABI)" "armeabi-v7a"
+  FLITE_BUILD_SUBDIR:="armeabiv7a"
+endif
+
+FLITE_LIB_DIR:= $(FLITEDIR)/build/$(FLITE_BUILD_SUBDIR)-android/lib
 
 # wrapper lib will depend on and include the flite libs
 #
