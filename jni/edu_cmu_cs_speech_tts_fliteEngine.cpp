@@ -50,7 +50,7 @@
 
 // Local headers
 #include "./edu_cmu_cs_speech_tts_Common.h"
-#include "edu_cmu_cs_speech_tts_fliteVoices.hh"
+#include "./edu_cmu_cs_speech_tts_fliteVoices.h"
 #include "./edu_cmu_cs_speech_tts_String.h"
 
 static android_tts_synth_cb_t ttsSynthDoneCBPointer;

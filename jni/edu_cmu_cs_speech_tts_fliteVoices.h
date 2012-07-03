@@ -37,9 +37,10 @@
 /*  Library classes to manage available flite voices                     */
 /*                                                                       */
 /*************************************************************************/
-#ifndef __FliteEngine_Voices
-#define __FliteEngine_Voices
-#include "edu_cmu_cs_speech_tts_String.h"
+#ifndef JNI_EDU_CMU_CS_SPEECH_TTS_FLITEVOICES_H_
+#define JNI_EDU_CMU_CS_SPEECH_TTS_FLITEVOICES_H_
+
+#include "./edu_cmu_cs_speech_tts_String.h"
 
 #include <flite.h>
 #include <tts/tts.h>
@@ -54,103 +55,107 @@
 namespace FliteEngine {
   // Function pointer type for flite_register_voice
   typedef cst_voice* (*t_voice_register_function)(const char*);
- 
+
   // Function pointer type for flite_unregister_voice
-  typedef void (*t_voice_unregister_function)(cst_voice*);
+  typedef void (*t_voice_unregister_function)(cst_voice* v);
 
   enum VoiceRegistrationMode {
     ONLY_ONE_VOICE_REGISTERED = 0,
     ALL_VOICES_REGISTERED = 1
-  }; 
+  };
 
 
   class Voice {
-  protected:
+ protected:
     String mLanguage;  // ISO3 language
     String mCountry;   // ISO3 country
     String mVariant;   // Short name of the variant
-    cst_voice* mFliteVoice; //Pointer to registered flite voice
-    
-  public:
+    cst_voice* mFliteVoice;  // Pointer to registered flite voice
+
+ public:
+    virtual ~Voice() {}
     const char* getLanguage();
     const char* getCountry();
     const char* getVariant();
-    
-    // Returns the currently set flite voice. 
+
+    // Returns the currently set flite voice.
     // WARNING: This will *NOT* register the voice.
     cst_voice* getFliteVoice();
-    
+
     bool isSameLocaleAs(String flang, String fcountry, String fvar);
-    
+
     // Returns how far the language request is supported.
-    virtual android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar){return ANDROID_TTS_LANG_NOT_SUPPORTED;}
-    
+    virtual android_tts_support_result_t getLocaleSupport(String flang,
+                                                          String fcountry,
+                                                          String fvar) {
+      return ANDROID_TTS_LANG_NOT_SUPPORTED;
+    }
+
     virtual void unregisterVoice() {}
-};
-  
+  };
+
 
   // Voices that are linked into the library
   class LinkedVoice : public Voice {
-  private:
+ private:
+    t_voice_register_function mRegfunc;  // Flite function: register voice
+    t_voice_unregister_function mUnregfunc;  // Flite function: unregister voice
 
-    // Flite Function that should be called to register the voice
-    t_voice_register_function mRegfunc; 
+ public:
+    LinkedVoice(String flang, String fcountry, String fvar,
+                t_voice_register_function freg,
+                t_voice_unregister_function funreg);
 
-    // Flite Function that should be called to unregister the voice=
-    t_voice_unregister_function mUnregfunc; 
-
-  public:
-    LinkedVoice(String flang, String fcountry, String fvar, 
-	  t_voice_register_function freg, 
-	  t_voice_unregister_function funreg);
-    
     ~LinkedVoice();
 
     cst_voice* registerVoice();
     void unregisterVoice();
-    
-    android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar);
 
+    android_tts_support_result_t getLocaleSupport(String flang,
+                                                  String fcountry, String fvar);
   };
 
   class ClustergenVoice : public Voice {
-  public:
+ public:
     ClustergenVoice();
     ~ClustergenVoice();
-    
-    android_tts_support_result_t getLocaleSupport(String flang, String fcountry, String fvar);
-    android_tts_result_t setLanguage(String flang, String fcountry, String fvar);
+
+    android_tts_support_result_t getLocaleSupport(String flang,
+                                                  String fcountry, String fvar);
+    android_tts_result_t setLanguage(String flang,
+                                     String fcountry, String fvar);
     void unregisterVoice();
   };
 
   class Voices {
-  private:
+ private:
     LinkedVoice** mVoiceList;
     Voice* mCurrentVoice;
     ClustergenVoice mCGVoice;
-    VoiceRegistrationMode mRMode; // Registration mode
-    int mMaxCount; // Maximum voice list size
-    int mCurrentCount; // Current occupancy of voice list
+    VoiceRegistrationMode mRMode;  // Registration mode
+    int mMaxCount;  // Maximum voice list size
+    int mCurrentCount;  // Current occupancy of voice list
 
-  public:
-
-    Voices(int fmaxCount,VoiceRegistrationMode fregistrationMode);
+ public:
+    Voices(int fmaxCount, VoiceRegistrationMode fregistrationMode);
     ~Voices();
 
     Voice* getCurrentVoice();
 
-    void addLinkedVoice(String flang, String fcountry, String fvar, 
-		  t_voice_register_function freg,
-		  t_voice_unregister_function funreg);
+    void addLinkedVoice(String flang, String fcountry, String fvar,
+                        t_voice_register_function freg,
+                        t_voice_unregister_function funreg);
 
     void setDefaultVoice();
 
     // Find out if a particular locale is available.
-    android_tts_support_result_t isLocaleAvailable(String flang, String fcountry, String fvar);
+    android_tts_support_result_t isLocaleAvailable(String flang,
+                                                   String fcountry,
+                                                   String fvar);
 
     // Register and set the current voice to the one asked for
     Voice* getVoiceForLocale(String flang, String fcountry, String fvar);
-  };  
-
+  };
 }
-#endif
+
+#endif  // JNI_EDU_CMU_CS_SPEECH_TTS_FLITEVOICES_H_
