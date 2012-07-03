@@ -58,7 +58,10 @@ import java.io.FileWriter;
 public class CheckVoiceData extends Activity {
   private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
       + "/flite-data/";
-	
+  
+  public static String getDataPath() {
+	  return FLITE_DATA_PATH;
+  }
     
   @Override
   public void onCreate(Bundle savedInstanceState) {

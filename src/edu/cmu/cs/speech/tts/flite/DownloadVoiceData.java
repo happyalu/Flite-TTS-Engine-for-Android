@@ -61,8 +61,7 @@ import android.widget.TextView;
  * 
  */
 public class DownloadVoiceData extends Activity {
-  private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
-      + "/flite-data/";
+  private final static String FLITE_DATA_PATH = CheckVoiceData.getDataPath();
 	
   private ArrayAdapter<CharSequence> mVoiceList;
   private ArrayAdapter<CharSequence> mVoiceDescList;

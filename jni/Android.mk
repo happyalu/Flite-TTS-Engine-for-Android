@@ -13,7 +13,8 @@ FLITE_LIB_DIR:= $(FLITEDIR)/build/$(FLITE_BUILD_SUBDIR)-android/lib
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := ttsflite 
-LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteEngine.cpp \
+LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteService.cpp \
+	edu_cmu_cs_speech_tts_fliteEngine.cpp \
 	edu_cmu_cs_speech_tts_fliteVoices.cpp \
 	edu_cmu_cs_speech_tts_String.cpp
 

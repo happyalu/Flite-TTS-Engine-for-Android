@@ -36,102 +36,94 @@
 
 package edu.cmu.cs.speech.tts.flite;
 
-import java.util.Locale;
+import java.io.File;
 
-import edu.cmu.cs.speech.tts.flite.NativeFliteTTS.SynthReadyCallback;
-import android.annotation.TargetApi;
-import android.speech.tts.SynthesisCallback;
-import android.speech.tts.SynthesisRequest;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeechService;
+import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
-/**
- * Implements the Flite Engine as a TextToSpeechService
- *
- */
-
-@TargetApi(14)
-public class FliteTtsService extends TextToSpeechService {
-	private final String LOG_TAG = "FliteTtsService";
-	private NativeFliteTTS mEngine;
-	private SynthReadyCallback mSynthCallback;
+public class NativeFliteTTS {
+	private static final String LOG_TAG = "NativeFliteTTS";
 	
-	private static final String DEFAULT_LANGUAGE = "eng";
-	private static final String DEFAULT_COUNTRY = "USA";
-	private static final String DEFAULT_VARIANT = "male,rms";
+	static {
+		System.loadLibrary("ttsflite");
+		nativeClassInit();
+	}
+
+	private final Context mContext;
+	private final SynthReadyCallback mCallback;
+    private final String mDatapath;
+    private boolean mInitialized = false;
+    
+	public NativeFliteTTS(Context context, SynthReadyCallback callback) {
+		mDatapath = new File(CheckVoiceData.getDataPath()).getParent();
+		mContext = context;
+		mCallback = callback;
+		attemptInit();		
+	}
 	
-	private String mCountry = DEFAULT_COUNTRY;
-	private String mLanguage = DEFAULT_LANGUAGE;
-	private String mVariant = DEFAULT_VARIANT;
-	private Object mAvailableVoices;
-
 	@Override
-	public void onCreate() {
-		initializeFliteEngine();
-		
-		// This calls onIsLanguageAvailable() and must run after Initialization
-		super.onCreate();		
+    protected void finalize() {
+        nativeDestroy();
+    }
+	
+	public int isLanguageAvailable(String language, String country,	String variant) {
+		return nativeIsLanguageAvailable(language, country, variant);
 	}
+	
+	public boolean setLanguage(String language, String country, String variant) {
+        attemptInit();
+        return nativeSetLanguage(language, country, variant);
+    }
+	
+	public void synthesize(String text) {
+        nativeSynthesize(text);
+    }
 
-	private void initializeFliteEngine() {
-		if (mEngine != null) {
-			mEngine.stop();
-			mEngine = null;
-		}
-		mEngine = new NativeFliteTTS(this, mSynthCallback);
-	}
+    public void stop() {
+        nativeStop();
+    }
+    
+    private void nativeSynthCallback(byte[] audioData) {
+        if (mCallback == null)
+            return;
 
-	@Override
-	protected String[] onGetLanguage() {
-		Log.v(LOG_TAG, "onGetLanguage");
-		return new String[] {
-                mLanguage, mCountry, mVariant
-        };
-	}
-
-	@Override
-	protected int onIsLanguageAvailable(String language, String country, String variant) {
-		Log.v(LOG_TAG, "onIsLanguageAvailable");
-		return mEngine.isLanguageAvailable(language, country, variant);
-	}
-
-	@Override
-	protected int onLoadLanguage(String language, String country, String variant) {
-		Log.v(LOG_TAG, "onLoadLanguage");
-		return mEngine.isLanguageAvailable(language, country, variant);
-	}
-
-	@Override
-	protected void onStop() {
-		Log.v(LOG_TAG, "onStop");
-		mEngine.stop();
-	}
-
-	@Override
-	protected synchronized void onSynthesizeText(
-			SynthesisRequest request, SynthesisCallback callback) {
-		Log.v(LOG_TAG, "onSynthesize");
-		String language = request.getLanguage();
-		String country = request.getCountry();
-		String variant = request.getVariant();
-		
-		boolean result = true;
-		
-		if (! ((mLanguage == language) &&
-				(mCountry == country) &&
-				(mVariant == variant ))) {
-			result = mEngine.setLanguage(language, country, variant);
-		}
-		
-		if (!result) {
-			Log.e(LOG_TAG, "Could not set language for synthesis");
+        if (audioData == null) {
+            mCallback.onSynthDataComplete();
+        } else {
+            mCallback.onSynthDataReady(audioData);
+        }
+    }
+    
+    private void attemptInit() {
+        if (mInitialized) {
+            return;
+        }
+        
+        if (!nativeCreate(mDatapath)) {
+			Log.e(LOG_TAG, "Failed to initialize flite library");
 			return;
 		}
-		
-		mLanguage = language;
-		mCountry = country;
-		mVariant = variant;
-	}
+		Log.i(LOG_TAG, "Initialized Flite");
+		mInitialized = true;
+        
+    }
 
+    private int mNativeData;
+	private static native final boolean nativeClassInit();
+	private native final boolean nativeCreate(String path);
+    private native final boolean nativeDestroy();
+	private native final int nativeIsLanguageAvailable(String language, String country, String variant);
+	private native final boolean nativeSetLanguage(String language, String country, String variant);
+	private native final boolean nativeSynthesize(String text);
+	private native final boolean nativeStop();
+
+
+	public interface SynthReadyCallback {
+        void onSynthDataReady(byte[] audioData);
+
+        void onSynthDataComplete();
+    }
+
+	
 }

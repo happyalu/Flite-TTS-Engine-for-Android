@@ -14,7 +14,7 @@ import android.widget.Button;
 public class FliteManager extends Activity {
 
 	private ProgressDialog mProgress;
-	private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory() + "/flite-data/";
+	private final static String FLITE_DATA_PATH = CheckVoiceData.getDataPath();
 
 	/** Called when the activity is first created. */
 	@Override
