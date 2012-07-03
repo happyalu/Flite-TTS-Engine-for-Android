@@ -107,7 +107,7 @@ android_tts_support_result_t LinkedVoice::getLocaleSupport(String flang,
 
 cst_voice* LinkedVoice::registerVoice() {
   LOGI("Voice::registerVoice for %s", mVariant.c_str());
-  mFliteVoice = mRegfunc(voxdir_path);
+  mFliteVoice = mRegfunc(flite_voxdir_path);
   LOGI("Voice::registerVoice done");
   return mFliteVoice;
 }
@@ -236,7 +236,7 @@ android_tts_support_result_t ClustergenVoice::getLocaleSupport(String flang,
        fvar.c_str());
 
   android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
-  String path = voxdir_path;
+  String path = flite_voxdir_path;
   path = path + "/cg/" + flang;
   LOGV("Path: %s", path.c_str());
   if (!(get_default_country_in_languagedir(path)== "")) {
@@ -281,7 +281,7 @@ android_tts_result_t ClustergenVoice::setLanguage(String flang,
 
   android_tts_support_result_t languageSupport;
   languageSupport = getLocaleSupport(flang, fcountry, fvar);
-  String path = voxdir_path;
+  String path = flite_voxdir_path;
 
   if (languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
     path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.flitevox";

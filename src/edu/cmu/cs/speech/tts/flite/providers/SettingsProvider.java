@@ -37,17 +37,51 @@
 package edu.cmu.cs.speech.tts.flite.providers;
 
 
+import java.io.File;
+
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Environment;
 
 /**
  * Provides the "engineConfig" parameter for the legacy (pre-ICS) TTS API.
+ * This string basically stores the path to ExternalStorage
+ * This path gets used in the flite JNI code.
  */
+
 public class SettingsProvider extends ContentProvider {
+	private class SettingsCursor extends MatrixCursor {
+        private String settings;
+
+        public SettingsCursor(String[] columnNames) {
+            super(columnNames);
+        }
+
+        public void putSettings(String settings) {
+            this.settings = settings;
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+
+        @Override
+        public String getString(int column) {
+            return settings;
+        }
+    }
+
   @Override
   public int delete(Uri uri, String selection, String[] selectionArgs) {
+    return 0;
+  }
+  
+  @Override
+  public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
     return 0;
   }
 
@@ -69,12 +103,12 @@ public class SettingsProvider extends ContentProvider {
   @Override
   public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                       String sortOrder) {
-    return null;
+	  final File dataPath = Environment.getExternalStorageDirectory();
+	  final String[] dummyColumns = {
+			  		"", ""
+	  	};
+	  	final SettingsCursor cursor = new SettingsCursor(dummyColumns);
+	  cursor.putSettings(dataPath.getPath());
+	  return cursor;
   }
-
-  @Override
-  public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-    return 0;
-  }
-
 }

@@ -56,6 +56,7 @@
 static android_tts_synth_cb_t ttsSynthDoneCBPointer;
 static int ttsAbort = 0;
 static int ttsStream = 1;
+char* flite_voxdir_path;
 FliteEngine::Voices* loadedVoices;
 FliteEngine::Voice* currentVoice;
 
@@ -156,6 +157,17 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 {
   LOGI("TtsEngine::init start");
 
+  // First make sure we receive the data directory. That's very crucial.
+  if ((engineConfig != NULL) && (strlen(engineConfig) > 0)) {
+    flite_voxdir_path = reinterpret_cast<char*>(malloc(strlen(engineConfig) + 12));
+    snprintf(flite_voxdir_path, strlen(engineConfig) + 12,
+             "%s/%s", engineConfig, "flite-data");
+  } else {
+    LOGE("External storage directory not specified in engineConfig. ERROR.");
+    LOGE("TtsEngine::init fail");
+    return ANDROID_TTS_FAILURE;
+  }
+
   ttsSynthDoneCBPointer = synthDoneCBPtr;
   flite_init();
   setVoiceList();
@@ -181,6 +193,10 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
   // Shutsdown the TTS engine. Unload all voices
   android_tts_result_t shutdown(void* engine )
   {
+    if (flite_voxdir_path != NULL) {
+      free(flite_voxdir_path);
+    }
+    
     LOGI("TtsEngine::shutdown");
     if(loadedVoices != NULL)
       delete loadedVoices;

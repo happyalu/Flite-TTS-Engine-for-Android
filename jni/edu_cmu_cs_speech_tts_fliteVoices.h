@@ -50,9 +50,11 @@
 #include <unistd.h>
 #include <dirent.h>
 
-#define voxdir_path "/sdcard/flite-data"
+//#define voxdir_path "/sdcard/flite-data"
+extern char* flite_voxdir_path;  // Path to flite-data directory
 
 namespace FliteEngine {
+  
   // Function pointer type for flite_register_voice
   typedef cst_voice* (*t_voice_register_function)(const char*);
 
