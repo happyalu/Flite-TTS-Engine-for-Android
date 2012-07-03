@@ -38,13 +38,15 @@
 /*                                                                       */
 /*************************************************************************/
 
-#ifndef __FliteEngine_Common
-#define __FliteEngine_Common
+#ifndef JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_
+#define JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_
+
 /* Set up Logging macros */
 #include <android/log.h>
-#define LOG_TAG "FliteEngine"
+#define LOG_TAG "Flite_Engine_Native"
+#define DEBUG_ENABLED 1
 
-#if 1
+#if DEBUG_ENABLED
 
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , LOG_TAG, __VA_ARGS__)
@@ -61,4 +63,4 @@
 #define LODW(...)
 
 #endif
-#endif
+#endif  // JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_

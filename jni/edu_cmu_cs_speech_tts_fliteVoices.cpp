@@ -39,7 +39,7 @@
 /*************************************************************************/
 
 #include "edu_cmu_cs_speech_tts_fliteVoices.hh"
-#include "edu_cmu_cs_speech_tts_Common.hh"
+#include "./edu_cmu_cs_speech_tts_Common.h"
 
 namespace FliteEngine {
   
