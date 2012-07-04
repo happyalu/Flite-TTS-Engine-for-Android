@@ -83,14 +83,14 @@ public class FileDownloader {
 			finishedFileLength = 0;
 
 			InputStream raw = uc.getInputStream();
-			InputStream in = new BufferedInputStream(raw,256);
+			InputStream in = new BufferedInputStream(raw,1024);
 			FileOutputStream out = new FileOutputStream(filename);
 
 			int bytesRead = 0;
-			byte[] data = new byte[256];
+			byte[] data = new byte[1024];
 
 			while (bytesRead != -1) {
-				bytesRead = in.read(data, 0, 256);
+				bytesRead = in.read(data, 0, 1024);
 				if (bytesRead == -1)
 					break;    			
 				finishedFileLength += bytesRead;

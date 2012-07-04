@@ -111,20 +111,28 @@ public class DownloadVoiceData extends Activity {
 		mVoiceList.clear();
 		mVoiceDescList.clear();
 		for(String s: availableLanguages) {
-			String[] voiceParams = s.split("-");
-			if(voiceParams.length != 3) {
-				Log.e("Flite.CheckVoiceData","Incorrect voicename:" + s);
+			String[] voiceInfo = s.split("\t");
+			if (voiceInfo.length != 2) {
+				Log.e(LOG_TAG, "Voice line could not be read: " + s);
 				continue;
 			}
-			String voxdatafile = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox";
-			if(!Utility.pathExists(voxdatafile)) {
+			String voiceName = voiceInfo[0];
+			String voiceMD5 = voiceInfo[1];
+
+			String[] voiceParams = voiceName.split("-");
+			if(voiceParams.length != 3) {
+				Log.e(LOG_TAG,"Incorrect voicename:" + voiceName);
+				continue;
+			}
+
+			if(!CheckVoiceData.voiceAvailable(voiceParams, voiceMD5)) {
 				// We need to install this voice.
 				Locale loc = new Locale(voiceParams[0],voiceParams[1],voiceParams[2]);
 
 				mVoiceDescList.add(loc.getDisplayLanguage() +
 						" (" + loc.getISO3Country() + ", " +
 						loc.getVariant() + ")");
-				mVoiceList.add(s);
+				mVoiceList.add(voiceName);
 			}
 		}
 		if(mVoiceList.getCount()==0) {
