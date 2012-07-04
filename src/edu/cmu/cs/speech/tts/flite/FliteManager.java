@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 
 public class FliteManager extends Activity {
+	private final static String LOG_TAG = "Flite_Java_" + FliteManager.class.getSimpleName();	
+
 
 	private ProgressDialog mProgress;
 	private final static String FLITE_DATA_PATH = CheckVoiceData.getDataPath();
@@ -23,12 +25,12 @@ public class FliteManager extends Activity {
 		setContentView(R.layout.flitemanager);
 
 		Button b = (Button) findViewById(R.id.button1);
-		
+
 		b.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                syncVoiceList();
-            }
-        });
+			public void onClick(View v) {
+				syncVoiceList();
+			}
+		});
 	}
 
 	private boolean syncVoiceList() {
@@ -47,11 +49,11 @@ public class FliteManager extends Activity {
 		mProgress.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel",
 				new ProgressDialog.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						fdload.abort();
-					}
-				});
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				fdload.abort();
+			}
+		});
 		mProgress.show();
 
 		final Builder syncSuccessStatus = new AlertDialog.Builder(this);
@@ -85,7 +87,7 @@ public class FliteManager extends Activity {
 							@Override
 							public void run() {
 								mProgress
-										.setProgress(fdload.finishedFileLength);
+								.setProgress(fdload.finishedFileLength);
 							}
 						});
 					}
@@ -100,15 +102,15 @@ public class FliteManager extends Activity {
 					}
 				});
 				if (!fdload.success) {
-					Log.e("Flite.LiveUpdate", "Voice list download failed!");
+					Log.e(LOG_TAG, "Voice list download failed!");
 					if (fdload.abortDownload)
 						syncSuccessStatus.setMessage("Live Update aborted.");
 					else
 						syncSuccessStatus
-								.setMessage("Live Update failed! Check your internet settings.");
+						.setMessage("Live Update failed! Check your internet settings.");
 				} else {
 					syncSuccessStatus
-							.setMessage("Live update succesful. Voice list synced with server.");
+					.setMessage("Live update succesful. Voice list synced with server.");
 				}
 				runOnUiThread(new Runnable() {
 

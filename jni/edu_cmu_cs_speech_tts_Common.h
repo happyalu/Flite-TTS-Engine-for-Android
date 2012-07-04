@@ -43,7 +43,7 @@
 
 /* Set up Logging macros */
 #include <android/log.h>
-#define LOG_TAG "Flite_Engine_Native"
+#define LOG_TAG "Flite_Native_Engine"
 #define DEBUG_ENABLED 1
 
 #if DEBUG_ENABLED

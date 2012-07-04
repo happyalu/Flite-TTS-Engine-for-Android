@@ -48,6 +48,7 @@ import java.util.Locale;
  * Returns the sample text string for the language requested
  */
 public class GetSampleText extends Activity {
+	private final static String LOG_TAG = "Flite_Java_" + GetSampleText.class.getSimpleName();	
     
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -62,9 +63,9 @@ public class GetSampleText extends Activity {
 
     if (language.equals("eng")) {
       returnData.putExtra("sampleText", getString(R.string.eng_sample));
-      Log.v("Flite.GetSampleText", "Returned SampleText: " + getString(R.string.eng_sample));
+      Log.v(LOG_TAG, "Returned SampleText: " + getString(R.string.eng_sample));
     } else {
-      Log.v("Flite.GetSampleText", "Unsupported Language: " + language);
+      Log.v(LOG_TAG, "Unsupported Language: " + language);
       result = TextToSpeech.LANG_NOT_SUPPORTED;
       returnData.putExtra("sampleText", "");
     }

@@ -56,6 +56,7 @@ import java.io.FileWriter;
  */
 
 public class CheckVoiceData extends Activity {
+	private final static String LOG_TAG = "Flite_Java_" + CheckVoiceData.class.getSimpleName();
   private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
       + "/flite-data/";
   
@@ -80,19 +81,19 @@ public class CheckVoiceData extends Activity {
 
     if(!Utility.pathExists(FLITE_DATA_PATH+"cg")) {
       // Create the directory.
-      Log.e("Flite.CheckVoiceData", "Flite data directory missing. Trying to create it.");
+      Log.e(LOG_TAG, "Flite data directory missing. Trying to create it.");
       boolean success;
       try {
-        Log.e("Flite.CheckVoiceData",FLITE_DATA_PATH);
+        Log.e(LOG_TAG,FLITE_DATA_PATH);
         success = new File(FLITE_DATA_PATH+"cg").mkdirs();
       }
       catch (Exception e) {
-        Log.e("Flite.CheckVoiceData","Could not create directory structure. "+e.getMessage());
+        Log.e(LOG_TAG,"Could not create directory structure. "+e.getMessage());
         success = false;
       }
 
       if(!success) {
-        Log.e("Flite.CheckVoiceData", "Failed");
+        Log.e(LOG_TAG, "Failed");
         // Can't do anything without appropriate directory structure.
         result = TextToSpeech.Engine.CHECK_VOICE_DATA_FAIL;
         setResult(result, returnData);
@@ -105,7 +106,7 @@ public class CheckVoiceData extends Activity {
      */
     String voiceListFile = FLITE_DATA_PATH+"cg/voices.list";
     if(!Utility.pathExists(voiceListFile)) {
-      Log.e("Flite.CheckVoiceData", "Voice list file doesn't exist. Try getting it from server.");
+      Log.e(LOG_TAG, "Voice list file doesn't exist. Try getting it from server.");
       String voiceListURL = "http://tts.speech.cs.cmu.edu/android/vox-flite-1.5.6/voices.list?q=1";
 
       FileDownloader fdload = new FileDownloader();
@@ -114,9 +115,9 @@ public class CheckVoiceData extends Activity {
       boolean savedVoiceList = fdload.success;
 			
       if(!savedVoiceList)
-        Log.w("Flite.CheckVoiceData","Could not update voice list from server");
+        Log.w(LOG_TAG,"Could not update voice list from server");
       else
-        Log.w("Flite.CheckVoiceData","Successfully updated voice list from server");
+        Log.w(LOG_TAG,"Successfully updated voice list from server");
     }
 
     /* At this point, we MUST have a voices.list file. If this file is not there,
@@ -125,19 +126,19 @@ public class CheckVoiceData extends Activity {
      */
     if(!Utility.pathExists(FLITE_DATA_PATH+"cg/voices.list")) {
       try {
-        Log.w("Flite.CheckVoiceData", "Voice list not found, creating dummy list.");
+        Log.w(LOG_TAG, "Voice list not found, creating dummy list.");
         BufferedWriter out = new BufferedWriter(new FileWriter(FLITE_DATA_PATH+"cg/voices.list"));
         out.write("eng-USA-male,rms");
         out.close();
       } catch (IOException e) {
-        Log.e("Flite.CheckVoiceData", "Failed to create voice list dummy file.");
+        Log.e(LOG_TAG, "Failed to create voice list dummy file.");
         // Can't do anything without that file.
         result = TextToSpeech.Engine.CHECK_VOICE_DATA_FAIL;
         setResult(result, returnData);
         finish();
       }
     }
-    Log.v("Flite.CheckVoiceData", "HERE");				
+    Log.v(LOG_TAG, "HERE");				
     /* Go through each line in voices.list file and see
      * if the data for that voice is installed.
      */
@@ -146,7 +147,7 @@ public class CheckVoiceData extends Activity {
     try {
       voiceList = Utility.readLines(FLITE_DATA_PATH+"cg/voices.list");
     } catch (IOException e) {
-      Log.e("Flite.CheckVoiceData","Problem reading voices list. This shouldn't happen!");
+      Log.e(LOG_TAG,"Problem reading voices list. This shouldn't happen!");
       result = TextToSpeech.Engine.CHECK_VOICE_DATA_FAIL;
       setResult(result, returnData);
       finish();
@@ -155,7 +156,7 @@ public class CheckVoiceData extends Activity {
     for(String strLine:voiceList) {
       String[] voiceParams = strLine.split("-");
       if(voiceParams.length != 3) {
-        Log.e("Flite.CheckVoiceData","Incorrect voicename:" + strLine);
+        Log.e(LOG_TAG,"Incorrect voicename:" + strLine);
         continue;
       }
 				
@@ -173,7 +174,7 @@ public class CheckVoiceData extends Activity {
   }
     
   private boolean voiceAvailable(String[] voiceParams) {
-    Log.v("Flite.CheckVoiceData", "Checking for Voice Available" + voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox");
+    Log.v(LOG_TAG, "Checking for Voice Available" + voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox");
     String voxdataFileName = FLITE_DATA_PATH + "cg/"+voiceParams[0]+"/"+voiceParams[1]+"/"+voiceParams[2]+".cg.flitevox";
     return Utility.pathExists(voxdataFileName);
   }

@@ -106,14 +106,14 @@ void setVoiceList() {
 
     short *waveSamples = (short *) &w->samples[start];
     compress(waveSamples, size, 5);
-    LOGV("Compressing with 5");
+    //LOGV("Compressing with 5");
   
     int8_t *castedWave = (int8_t *) &w->samples[start];
     size_t bufferSize = size*sizeof(short);
     int num_channels = w->num_channels;
     int sample_rate = w->sample_rate;
     
-    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
+    //    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
 
     if(ttsSynthDoneCBPointer != NULL)
       {
@@ -138,7 +138,7 @@ void setVoiceList() {
 	  }
 	else
 	  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
-	LOGV("flite callback processed!");
+        //	LOGV("flite callback processed!");
       }
     else
       {

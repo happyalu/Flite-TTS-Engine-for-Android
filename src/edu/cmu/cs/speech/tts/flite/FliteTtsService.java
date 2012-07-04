@@ -36,13 +36,14 @@
 
 package edu.cmu.cs.speech.tts.flite;
 
-import java.util.Locale;
-
 import edu.cmu.cs.speech.tts.flite.NativeFliteTTS.SynthReadyCallback;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioFormat;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
-import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
 import android.util.Log;
 
@@ -53,23 +54,23 @@ import android.util.Log;
 
 @TargetApi(14)
 public class FliteTtsService extends TextToSpeechService {
-	private final String LOG_TAG = "FliteTtsService";
+	private final static String LOG_TAG = "Flite_Java_" + FliteTtsService.class.getSimpleName();	
 	private NativeFliteTTS mEngine;
-	private SynthReadyCallback mSynthCallback;
 	
 	private static final String DEFAULT_LANGUAGE = "eng";
 	private static final String DEFAULT_COUNTRY = "USA";
 	private static final String DEFAULT_VARIANT = "male,rms";
-	
+
 	private String mCountry = DEFAULT_COUNTRY;
 	private String mLanguage = DEFAULT_LANGUAGE;
 	private String mVariant = DEFAULT_VARIANT;
 	private Object mAvailableVoices;
+	private SynthesisCallback mCallback;
 
 	@Override
 	public void onCreate() {
 		initializeFliteEngine();
-		
+
 		// This calls onIsLanguageAvailable() and must run after Initialization
 		super.onCreate();		
 	}
@@ -86,8 +87,8 @@ public class FliteTtsService extends TextToSpeechService {
 	protected String[] onGetLanguage() {
 		Log.v(LOG_TAG, "onGetLanguage");
 		return new String[] {
-                mLanguage, mCountry, mVariant
-        };
+				mLanguage, mCountry, mVariant
+		};
 	}
 
 	@Override
@@ -112,26 +113,64 @@ public class FliteTtsService extends TextToSpeechService {
 	protected synchronized void onSynthesizeText(
 			SynthesisRequest request, SynthesisCallback callback) {
 		Log.v(LOG_TAG, "onSynthesize");
+
 		String language = request.getLanguage();
 		String country = request.getCountry();
 		String variant = request.getVariant();
-		
+		String text = request.getText();
+
 		boolean result = true;
-		
+
 		if (! ((mLanguage == language) &&
 				(mCountry == country) &&
 				(mVariant == variant ))) {
 			result = mEngine.setLanguage(language, country, variant);
+			mLanguage = language;
+			mCountry = country;
+			mVariant = variant;
 		}
-		
+
 		if (!result) {
 			Log.e(LOG_TAG, "Could not set language for synthesis");
 			return;
 		}
-		
-		mLanguage = language;
-		mCountry = country;
-		mVariant = variant;
+		mCallback = callback;
+		mCallback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1);
+		mEngine.synthesize(text);		
 	}
 
+	private final NativeFliteTTS.SynthReadyCallback mSynthCallback = new SynthReadyCallback() {
+        @Override
+        public void onSynthDataReady(byte[] audioData) {
+            if ((audioData == null) || (audioData.length == 0)) {
+                onSynthDataComplete();
+                return;
+            }
+
+            final int maxBytesToCopy = mCallback.getMaxBufferSize();
+
+            int offset = 0;
+
+            while (offset < audioData.length) {
+                final int bytesToWrite = Math.min(maxBytesToCopy, (audioData.length - offset));
+                mCallback.audioAvailable(audioData, offset, bytesToWrite);
+                offset += bytesToWrite;
+            }
+        }
+
+        @Override
+        public void onSynthDataComplete() {
+            mCallback.done();
+        }
+	};
+	
+	/**
+	 * Listens for language update broadcasts and initializes the flite engine.
+	 */
+	private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			initializeFliteEngine();
+		}
+	};
 }

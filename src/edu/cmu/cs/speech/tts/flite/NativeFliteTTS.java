@@ -43,7 +43,7 @@ import android.os.Environment;
 import android.util.Log;
 
 public class NativeFliteTTS {
-	private static final String LOG_TAG = "NativeFliteTTS";
+	private final static String LOG_TAG = "Flite_Java_" + NativeFliteTTS.class.getSimpleName();	
 	
 	static {
 		System.loadLibrary("ttsflite");

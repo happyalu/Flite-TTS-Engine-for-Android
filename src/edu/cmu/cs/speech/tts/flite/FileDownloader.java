@@ -45,89 +45,90 @@ import java.net.URLConnection;
 import android.util.Log;
 
 public class FileDownloader {
-  public int totalFileLength = 0;
-  public int finishedFileLength;
-	
-  public boolean abortDownload;
-  public boolean finished;
-  public boolean success;
-	
-  public void saveUrlAsFile(final String url, final String filename) {
-    finished = false;
-    success = false;
-    new Thread() {
-      public void run() {
-        save(url, filename);
-      }
-    }.start();
-  }
-		
-  private boolean save(String url, String filename) {
-    try {
-      //TODO (aup): Improve the exception handling. This is cruel.
-    		
-      abortDownload = false;
-    		
-      Log.v("Flite.FileDownloader","Trying to save "+url+" as "+filename);
-      URL u = new URL(url);
-      URLConnection uc = u.openConnection();
+	private final static String LOG_TAG = "Flite_Java_" + FileDownloader.class.getSimpleName();	
+	public int totalFileLength = 0;
+	public int finishedFileLength;
 
-      uc.setDoInput(true);
-      uc.setDoOutput(true);
-      uc.getOutputStream();
-                
-      int contentLength = uc.getContentLength();
+	public boolean abortDownload;
+	public boolean finished;
+	public boolean success;
 
-      totalFileLength = contentLength;
-      finishedFileLength = 0;
+	public void saveUrlAsFile(final String url, final String filename) {
+		finished = false;
+		success = false;
+		new Thread() {
+			public void run() {
+				save(url, filename);
+			}
+		}.start();
+	}
 
-      InputStream raw = uc.getInputStream();
-      InputStream in = new BufferedInputStream(raw,256);
-      FileOutputStream out = new FileOutputStream(filename);
+	private boolean save(String url, String filename) {
+		try {
+			//TODO (aup): Improve the exception handling. This is cruel.
 
-      int bytesRead = 0;
-      byte[] data = new byte[256];
-      
-      while (bytesRead != -1) {
-        bytesRead = in.read(data, 0, 256);
-        if (bytesRead == -1)
-          break;    			
-        finishedFileLength += bytesRead;
-        out.write(data, 0, bytesRead);
-        if(abortDownload)
-          break;
-      }
-      Log.v("Flite.FileDownloader", "FinishedFileLength: " + finishedFileLength);
-      in.close();
+			abortDownload = false;
 
-      out.flush();
-      out.close();
-                
-      if(abortDownload) {
-        Log.e("Flite.FileDownloader", "File download aborted by user");
-        success = false;
-        finished = true;
-        new java.io.File(filename).delete();
-        return false;
-      }
-    		
-      if ((contentLength > 0) && (finishedFileLength != contentLength)) {
-        throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
-      }
-                
-      finished = true;
-      success = true;
-      return true;
-    }
-    catch (Exception e) {
-      Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
-      finished = true;
-      return false;
-    }
-  }
+			Log.v(LOG_TAG,"Trying to save "+url+" as "+filename);
+			URL u = new URL(url);
+			URLConnection uc = u.openConnection();
 
-  public void abort() {
-    abortDownload = true;
-  }
-	
+			uc.setDoInput(true);
+			uc.setDoOutput(true);
+			uc.getOutputStream();
+
+			int contentLength = uc.getContentLength();
+
+			totalFileLength = contentLength;
+			finishedFileLength = 0;
+
+			InputStream raw = uc.getInputStream();
+			InputStream in = new BufferedInputStream(raw,256);
+			FileOutputStream out = new FileOutputStream(filename);
+
+			int bytesRead = 0;
+			byte[] data = new byte[256];
+
+			while (bytesRead != -1) {
+				bytesRead = in.read(data, 0, 256);
+				if (bytesRead == -1)
+					break;    			
+				finishedFileLength += bytesRead;
+				out.write(data, 0, bytesRead);
+				if(abortDownload)
+					break;
+			}
+			Log.v(LOG_TAG, "FinishedFileLength: " + finishedFileLength);
+			in.close();
+
+			out.flush();
+			out.close();
+
+			if(abortDownload) {
+				Log.e(LOG_TAG, "File download aborted by user");
+				success = false;
+				finished = true;
+				new java.io.File(filename).delete();
+				return false;
+			}
+
+			if ((contentLength > 0) && (finishedFileLength != contentLength)) {
+				throw new IOException("Only read " + finishedFileLength + " bytes; Expected " + contentLength + " bytes");
+			}
+
+			finished = true;
+			success = true;
+			return true;
+		}
+		catch (Exception e) {
+			Log.e("Flite Utility","Could not save url as file.: "+e.getMessage());
+			finished = true;
+			return false;
+		}
+	}
+
+	public void abort() {
+		abortDownload = true;
+	}
+
 }
