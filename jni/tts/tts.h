@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #ifndef ANDROID_TTS_H
-#define ANDROID_TTS_H 
+#define ANDROID_TTS_H
 
 // This header defines the interface used by the Android platform
 // to access Text-To-Speech functionality in shared libraries that implement
@@ -305,6 +305,8 @@ struct android_tts_engine_funcs_t {
              size_t bufferSize,
              void *userdata);
 };
+
+  float getBenchmark();
 
 #ifdef __cplusplus
 }

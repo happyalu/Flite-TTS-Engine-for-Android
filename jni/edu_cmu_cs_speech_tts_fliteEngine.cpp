@@ -495,3 +495,56 @@ android_tts_engine_t *android_getTtsEngine()
 }
 
 
+// This function generates a benchmark of how fast the current voice is.
+float getBenchmark() {
+  cst_voice* flite_voice;
+  if(currentVoice == NULL)
+  {
+    LOGE("Voices not loaded?");
+    return -1;
+  }
+
+  flite_voice = currentVoice->getFliteVoice();
+  if(flite_voice == NULL)
+  {
+    LOGE("Voice not available");
+    return -1;
+  }
+
+  LOGI("TtsEngine Running Benchmark");
+
+  timespec start, end;
+  float totalmilliseconds = 0;
+  float wavlen;
+  int num_trials = 10;
+
+  const char* text =
+      "This sentence is the being synthesized for a benchmark computation.";
+
+  for (int i = 0; i < num_trials; i++) {
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+    cst_wave* w = flite_text_to_wave(text, flite_voice);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
+
+    // Calculate time difference
+    timespec temp;
+    if ((end.tv_nsec-start.tv_nsec)<0)
+    {
+      temp.tv_sec = end.tv_sec-start.tv_sec-1;
+      temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    }
+    else
+    {
+      temp.tv_sec = end.tv_sec-start.tv_sec;
+      temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+
+    float diffmilliseconds = 1000*temp.tv_sec + (temp.tv_nsec)/1000000;
+    totalmilliseconds += diffmilliseconds;
+    wavlen = 1000*((float)w->num_samples / w->sample_rate);
+    delete_wave(w);
+  }
+
+  float timesrealtime = (wavlen*num_trials)/totalmilliseconds;
+  return timesrealtime;
+}

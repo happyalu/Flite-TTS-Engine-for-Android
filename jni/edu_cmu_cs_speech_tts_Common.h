@@ -69,7 +69,7 @@
 #define LOGE(...)
 #define LOGV(...)
 #define LOGD(...)
-#define LODW(...)
+#define LOGW(...)
 
 #endif
 #endif  // JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_

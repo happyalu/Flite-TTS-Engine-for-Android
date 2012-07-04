@@ -293,7 +293,7 @@ extern "C" {
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
 
-    return (jfloat) 0;
+    return (jfloat) getBenchmark();
   }
 
 #ifdef __cplusplus
