@@ -37,6 +37,13 @@
         <isset property="env.ANDROID_HOME" />
     </condition>
 
+    <!-- if ndk.dir was not set from property file, get it from ANDROID_NDK 
+    -->
+
+    <condition property="ndk.dir" value="${env.ANDROID_NDK}">
+        <isset property="env.ANDROID_NDK" />
+    </condition>
+
     <!-- The project.properties file is created and updated by the 'android'
          tool, as well as ADT.
 
@@ -54,6 +61,12 @@
             unless="sdk.dir"
     />
 
+    <!-- quick check on ndk.dir -->
+    <fail
+            message="ndk.dir is missing. Make sure to set ANDROID_NDK environment variable."
+            unless="ndk.dir"
+    />
+
     <!--
         Import per project custom build rules if present at the root of the project.
         This is the place to put custom intermediary targets such as:
@@ -67,6 +80,48 @@
             -pre-clean
     -->
     <import file="custom_rules.xml" optional="true" />
+
+    <!-- 
+        Allow compiling NDK before building the APK file
+    -->
+    <property environment="env" />
+    <condition property="cmd" value=".cmd" else="">
+      <os family="windows" />
+    </condition>
+    <condition property="shell" value="${env.ComSpec}" else="${env.SHELL}">
+      <os family="windows" />
+    </condition>
+    <property name="ndk-build" value="${ndk.dir}/ndk-build${cmd}" />
+    
+    <target name="-check-release">
+      <condition property="releaseFlag">
+	<equals arg1="${build.target}" arg2="release" />
+      </condition>
+    </target>
+    
+    <target name="-pre-build" depends="-check-release">
+      <if condition="${releaseFlag}">
+	<then>
+	  <exec executable="${ndk-build}" failonerror="true">
+	    <arg value="NDK_DEBUG=0" />
+	    <arg value="-B" />
+	  </exec>
+	</then>
+	<else>
+	  <exec executable="${ndk-build}" failonerror="true">
+	    <arg value="NDK_DEBUG=1" />
+	    <arg value="-B" />
+	  </exec>
+	</else>
+      </if>
+    </target>
+    
+    <target name="clean" depends="android_rules.clean">
+      <exec executable="${ndk-build}" failonerror="true">
+	<arg value="clean" />
+      </exec>
+    </target>
+
 
     <!-- Import the actual build file.
 
