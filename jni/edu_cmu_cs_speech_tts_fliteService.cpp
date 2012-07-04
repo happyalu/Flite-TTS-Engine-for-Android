@@ -53,7 +53,8 @@
 #undef LOG_TAG
 #endif
 #define LOG_TAG "Flite_Native_JNI_Service"
-#define DEBUG 1
+
+#define DEBUG_LOG_FUNCTION if (FLITE_DEBUG_ENABLED) LOGV("%s", __FUNCTION__)
 
 jmethodID METHOD_nativeSynthCallback;
 jfieldID FIELD_mNativeData;
@@ -67,7 +68,7 @@ class SynthJNIData {
   size_t                          mBufferSize;
 
   SynthJNIData() {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
     env = NULL;
     tts_ref = NULL;
     mFliteEngine = NULL;
@@ -77,7 +78,7 @@ class SynthJNIData {
   }
 
   ~SynthJNIData() {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     if (mFliteEngine) {
       mFliteEngine->shutdown(mFliteEngine);
@@ -94,7 +95,8 @@ static android_tts_callback_status_t ttsSynthDoneCB(
     android_tts_audio_format_t format, int channelCount,
     int8_t **pWav, size_t *pBufferSize,
     android_tts_synth_status_t status) {
-  if (DEBUG) LOGV("%s", __FUNCTION__);
+  DEBUG_LOG_FUNCTION;
+
 
   if (pUserdata == NULL) {
     LOGE("ttsSynthDoneCB: userdata == NULL");
@@ -123,6 +125,7 @@ extern "C" {
 #endif  // __cplusplus
   JNIEXPORT jint
   JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    DEBUG_LOG_FUNCTION;
     JNIEnv *env;
 
     if (vm->GetEnv(reinterpret_cast<void **>(&env),
@@ -137,7 +140,7 @@ extern "C" {
   JNIEXPORT jboolean
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeClassInit(
       JNIEnv * env, jclass cls) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
     METHOD_nativeSynthCallback = env->GetMethodID(cls,
                                                   "nativeSynthCallback",
                                                   "([B)V");
@@ -149,7 +152,7 @@ extern "C" {
   JNIEXPORT jboolean
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeCreate(
       JNIEnv *env, jobject object, jstring path) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     const char *pathString = env->GetStringUTFChars(path, 0);
 
@@ -170,7 +173,7 @@ extern "C" {
   JNIEXPORT jboolean
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeDestroy(
       JNIEnv *env, jobject object) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     int jniData = env->GetIntField(object, FIELD_mNativeData);
     SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
@@ -184,7 +187,7 @@ extern "C" {
   Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeIsLanguageAvailable(
       JNIEnv *env, jobject object, jstring language,
       jstring country, jstring variant) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     const char *c_language = env->GetStringUTFChars(language, NULL);
     const char *c_country = env->GetStringUTFChars(country, NULL);
@@ -210,7 +213,7 @@ extern "C" {
   Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeSetLanguage(
       JNIEnv *env, jobject object, jstring language,
       jstring country, jstring variant) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     const char *c_language = env->GetStringUTFChars(language, NULL);
     const char *c_country = env->GetStringUTFChars(country, NULL);
@@ -239,7 +242,7 @@ extern "C" {
   JNIEXPORT jboolean
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeSynthesize(
       JNIEnv *env, jobject object, jstring text) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     int jniData = env->GetIntField(object, FIELD_mNativeData);
     SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
@@ -258,11 +261,10 @@ extern "C" {
     return result;
   }
 
-
   JNIEXPORT jboolean
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeStop(
       JNIEnv *env, jobject object) {
-    if (DEBUG) LOGV("%s", __FUNCTION__);
+    DEBUG_LOG_FUNCTION;
 
     int jniData = env->GetIntField(object, FIELD_mNativeData);
     SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
@@ -275,6 +277,23 @@ extern "C" {
     } else {
       return JNI_FALSE;
     }
+  }
+
+  JNIEXPORT jstring
+  JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetABI(
+      JNIEnv *env, jobject object) {
+    DEBUG_LOG_FUNCTION;
+
+    jstring abi_string = env->NewStringUTF(ANDROID_BUILD_ABI);
+    return abi_string;
+  }
+
+  JNIEXPORT jfloat
+  JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetBenchmark(
+      JNIEnv *env, jobject object) {
+    DEBUG_LOG_FUNCTION;
+
+    return (jfloat) 0;
   }
 
 #ifdef __cplusplus

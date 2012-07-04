@@ -98,35 +98,35 @@ void setVoiceList() {
 	samples[i]=limit * (sgn(x)*(log(1+(mu/limit)*abs(x))/log(1+mu)));
       }
   }
-  
+
   /* Callback from flite. Should call back the TTS API */
   static int fliteCallback(const cst_wave *w, int start, int size,
-			   int last, cst_audio_streaming_info_struct *asi) 
+			   int last, cst_audio_streaming_info_struct *asi)
   {
 
     short *waveSamples = (short *) &w->samples[start];
     compress(waveSamples, size, 5);
     //LOGV("Compressing with 5");
-  
+
     int8_t *castedWave = (int8_t *) &w->samples[start];
     size_t bufferSize = size*sizeof(short);
     int num_channels = w->num_channels;
     int sample_rate = w->sample_rate;
-    
+
     //    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
 
     if(ttsSynthDoneCBPointer != NULL)
       {
-	if(last == 1) 
+	if(last == 1)
 	  {
 	    /* Bug in audio rendering: Short utterances are not played. Fix it by playing silence in addition. */
 	    float dur = (start+size)/sample_rate;
-	    if(dur < 0.8) 
+	    if(dur < 0.8)
 	      {
 		// create padding
 		size_t padding_length = num_channels*(sample_rate/2);
 		int8_t* paddingWave = new int8_t[padding_length]; // Half a second
-		for(int i=0;i<(int)padding_length;i++) 
+		for(int i=0;i<(int)padding_length;i++)
 		  paddingWave[i] = 0;
 		LOGE("Utterance too short. Adding padding to the output to workaround audio rendering bug.");
 		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
@@ -145,10 +145,10 @@ void setVoiceList() {
 	LOGE("flite callback not processed because it's NULL!");
 	ttsAbort = 1;
       }
-  
+
   if(ttsAbort == 1)
     return CST_AUDIO_STREAM_STOP;
-  
+
   return CST_AUDIO_STREAM_CONT;
 }
 
@@ -156,6 +156,9 @@ void setVoiceList() {
 android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, const char *engineConfig)
 {
   LOGI("TtsEngine::init start");
+
+  LOGI("Compilation Build Date: %s %s", __DATE__, __TIME__);
+  LOGI("Compilation Platform: %s", ANDROID_BUILD_ABI);
 
   // First make sure we receive the data directory. That's very crucial.
   if ((engineConfig != NULL) && (strlen(engineConfig) > 0)) {
@@ -196,7 +199,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     if (flite_voxdir_path != NULL) {
       free(flite_voxdir_path);
     }
-    
+
     LOGI("TtsEngine::shutdown");
     if(loadedVoices != NULL)
       delete loadedVoices;
@@ -211,7 +214,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     return ANDROID_TTS_SUCCESS;
   }
 
-  // Set the language based on locale. We use our voices manager to do this job. 
+  // Set the language based on locale. We use our voices manager to do this job.
   android_tts_result_t setLanguage( void* engine, const char * lang, const char * country, const char * variant )
   {
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
@@ -230,22 +233,22 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	LOGE("TtsEngine::setLanguage : Could not set voice");
 	return ANDROID_TTS_FAILURE;
       }
-    
+
     if(currentVoice->getFliteVoice() == NULL)
       return ANDROID_TTS_FAILURE;
     else
-      return ANDROID_TTS_SUCCESS; 
+      return ANDROID_TTS_SUCCESS;
   }
 
   // Language availability check does not use the "streaming" byte, as in setLanguage
   // Also, check is made against the entire locale.
   android_tts_support_result_t isLanguageAvailable(void* engine, const char *lang, const char *country,
-                                                    const char *variant) 
+                                                    const char *variant)
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
 
     // The hack to set streaming:
-    // If language and country are not set, then variant will be 
+    // If language and country are not set, then variant will be
     // interpreted as being "stream" or "nostream" to set the appropriate parameters.
     // The default is to stream.
     if((strcmp(lang,"")==0) && (strcmp(country,"")==0))
@@ -268,7 +271,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	    return ANDROID_TTS_LANG_NOT_SUPPORTED;
 	  }
       }
-    
+
     return loadedVoices->isLocaleAvailable(lang, country, variant);
   }
 
@@ -317,7 +320,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
                                     const size_t size)
   {
     LOGW("TtsEngine::setProperty is unimplemented");
-    return ANDROID_TTS_PROPERTY_UNSUPPORTED; 
+    return ANDROID_TTS_PROPERTY_UNSUPPORTED;
     // Other values hint: TTS_VALUE_INVALID, TTS_SUCCESS
   }
 
@@ -348,7 +351,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
   {
     cst_voice* flite_voice;
     if(currentVoice == NULL)
-      {	
+      {
         LOGE("Voices not loaded?");
         return ANDROID_TTS_FAILURE;
       }
@@ -358,7 +361,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	LOGE("Voice not available");
 	return ANDROID_TTS_FAILURE;
       }
-    
+
     LOGI("TtsEngine::synthesizeText: text=%s, bufferSize=%lu", text, (unsigned long) bufferSize);
 
     if(ttsStream)
@@ -381,12 +384,12 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	    // XML string given. Parse as SSML.
 
 	    // For now, just strip off all tags and say whatever remains.
-	    int pos1=0, pos2=0; 
+	    int pos1=0, pos2=0;
 	    int maxpos = strlen(text);
 
 	    char* textOverride = (char*)text;
 
-	    while(pos2<maxpos) 
+	    while(pos2<maxpos)
 	      {
 		while((pos2<maxpos) && (textOverride[pos2] != '<'))
 		  {
@@ -399,13 +402,13 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 		    pos2++;
 		  }
 	      }
-	    textOverride[pos1] = '\0';			    
-	    	    
+	    textOverride[pos1] = '\0';
+
 	  }
 
 	cst_utterance *u = flite_synth_text(text,flite_voice);
 	delete_utterance(u);
-      
+
         feat_remove(flite_voice->features, "streaming_info");
 
         LOGI("Done flite synthesis.");
@@ -462,12 +465,12 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
         return ANDROID_TTS_SUCCESS;
       }
   }
-  
+
   // Function to get TTS Engine
 android_tts_engine_t *getTtsEngine()
 {
   LOGI("TtsEngine::getTtsEngine");
-  
+
   android_tts_engine_t* engine;
   engine = (android_tts_engine_t*) malloc(sizeof(android_tts_engine_t));
   android_tts_engine_funcs_t* functable = (android_tts_engine_funcs_t*) malloc(sizeof(android_tts_engine_funcs_t));
@@ -486,7 +489,7 @@ android_tts_engine_t *getTtsEngine()
   return engine;
 }
 
-android_tts_engine_t *android_getTtsEngine() 
+android_tts_engine_t *android_getTtsEngine()
 {
   return getTtsEngine();
 }

@@ -97,6 +97,7 @@
         <activity-alias
             android:name=".EngineSettings"
             android:targetActivity=".FliteManager" />
+        <activity android:name="FliteInfoViewer"></activity>
     </application>
 
 </manifest>

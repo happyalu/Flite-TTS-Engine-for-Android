@@ -44,9 +44,18 @@
 /* Set up Logging macros */
 #include <android/log.h>
 #define LOG_TAG "Flite_Native_Engine"
-#define DEBUG_ENABLED 1
 
-#if DEBUG_ENABLED
+#ifndef FLITE_DEBUG_ENABLED
+// Don't debug by default
+#define FLITE_DEBUG_ENABLED 0
+#endif
+
+#ifndef ANDROID_BUILD_ABI
+// This tells us the target ABI for which code was compiled
+#define ANDROID_BUILD_ABI "unknown"
+#endif
+
+#if FLITE_DEBUG_ENABLED
 
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , LOG_TAG, __VA_ARGS__)

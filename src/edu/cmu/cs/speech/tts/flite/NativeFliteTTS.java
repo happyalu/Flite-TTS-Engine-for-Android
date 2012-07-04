@@ -84,6 +84,14 @@ public class NativeFliteTTS {
         nativeStop();
     }
     
+    public String getNativeABI() {
+    	return nativeGetABI();
+    }
+    
+    public float getNativeBenchmark() {
+		return nativeGetBenchmark();
+	}
+    
     private void nativeSynthCallback(byte[] audioData) {
         if (mCallback == null)
             return;
@@ -117,6 +125,9 @@ public class NativeFliteTTS {
 	private native final boolean nativeSetLanguage(String language, String country, String variant);
 	private native final boolean nativeSynthesize(String text);
 	private native final boolean nativeStop();
+	
+	private native final String nativeGetABI();
+	private native final float nativeGetBenchmark();
 
 
 	public interface SynthReadyCallback {

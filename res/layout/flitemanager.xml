@@ -9,13 +9,44 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Manage Flite Voices! Update voice data from Servers:"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:text="Hello from Flite!"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="14pt" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.25" >
+
+        <Button
+            android:id="@+id/button_info"
+            android:layout_width="155dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="42dp"
+            android:text="Show Flite Information"
+            android:textSize="20dp" />
+
+        <Button
+            android:id="@+id/button_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/button_info"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="78dp"
+            android:textSize="20dp"
+            android:text="Play Sample Synthesis" />
+
+    </RelativeLayout>
 
     <Button
         android:id="@+id/button1"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Live Update" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:text="Download List of Available Voices"
+        android:textSize="20dp" />
 
 </LinearLayout>
