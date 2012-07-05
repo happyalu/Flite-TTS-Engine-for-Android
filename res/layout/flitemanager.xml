@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   android:layout_width="fill_parent"
+   android:layout_height="fill_parent"
+   android:background="@android:color/black">
+ 
+    <GridView
+       android:id="@+id/dashboard_grid"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:listSelector="@android:color/transparent"
+       android:stretchMode="columnWidth"
+       android:verticalSpacing="20.0dip"
+       android:layout_centerInParent="true"
+       style="@style/dashboard" />
+ 
+</RelativeLayout>
+
+<!-- <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/LinearLayout2"
     android:layout_width="fill_parent"
@@ -49,4 +68,4 @@
         android:text="Download List of Available Voices"
         android:textSize="20dp" />
 
-</LinearLayout>
+</LinearLayout>-->

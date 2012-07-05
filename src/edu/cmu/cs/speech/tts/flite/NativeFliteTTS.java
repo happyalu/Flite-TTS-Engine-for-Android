@@ -56,7 +56,7 @@ public class NativeFliteTTS {
     private boolean mInitialized = false;
     
 	public NativeFliteTTS(Context context, SynthReadyCallback callback) {
-		mDatapath = new File(CheckVoiceData.getDataPath()).getParent();
+		mDatapath = new File(Voice.getDataStorageBasePath()).getParent();
 		mContext = context;
 		mCallback = callback;
 		attemptInit();		

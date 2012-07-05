@@ -37,32 +37,179 @@
 package edu.cmu.cs.speech.tts.flite;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
-
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.app.AlertDialog.Builder;
+import android.app.DownloadManager;
+import android.app.ListActivity;
+import android.content.Context;
+import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 /* Download user-requested voice data for Flite
  * 
  */
-public class DownloadVoiceData extends Activity {
+public class DownloadVoiceData extends ListActivity {
+	private final static String LOG_TAG = "Flite_Java_" + DownloadVoiceData.class.getSimpleName();
+	private VoiceListAdapter mListAdapter;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		registerReceiver(onComplete,
+				new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		
+		mListAdapter = new VoiceListAdapter(this);
+		setListAdapter(mListAdapter);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		unregisterReceiver(onComplete);
+	}
+
+	
+
+	private class VoiceListAdapter extends BaseAdapter {
+		
+		private Context mContext;
+		private ArrayList<Voice> mVoiceList;
+		private LayoutInflater mInflater;
+
+		public VoiceListAdapter(Context context) {
+			mContext = context;
+			mInflater = LayoutInflater.from(mContext);
+
+			// Get Information about voices
+			mVoiceList = CheckVoiceData.getVoices();			
+		}
+		
+		public void refresh() {
+			mVoiceList = CheckVoiceData.getVoices();
+			notifyDataSetChanged();
+		}
+		
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return mVoiceList.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(final int position, View convertView, ViewGroup parent) {
+			if (convertView == null) {
+				convertView = mInflater.inflate(R.layout.view_voice_manager, parent, false);
+			}
+
+			((TextView) convertView.findViewById(R.id.voice_manager_voice_language)).setText(mVoiceList.get(position).getDisplayLanguage());
+			((TextView) convertView.findViewById(R.id.voice_manager_voice_variant)).setText(mVoiceList.get(position).getVariant());
+			final ImageButton actionButton = (ImageButton) convertView.findViewById(R.id.voice_manager_action_image);
+			actionButton.setImageResource(
+					mVoiceList.get(position).isAvailable()?R.drawable.ic_action_delete:R.drawable.ic_action_download);
+			actionButton.setVisibility(View.VISIBLE);
+
+			actionButton.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					final Voice vox = mVoiceList.get(position);
+					if (!vox.isAvailable()) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+						builder.setMessage("Are you sure you want to download voice " + vox.getDisplayName() + "?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Download Voice", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								String url = Voice.getDownloadURLBasePath() + vox.getName() + ".flitevox";
+								DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+								request.setDescription("Downloading Flite Voice: " + vox.getName());
+								request.setTitle("Flite TTS Voice Download");
+								request.setDestinationUri(Uri.fromFile(new File(vox.getPath())));
+
+								DownloadManager manager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+								manager.enqueue(request);
+								actionButton.setVisibility(View.INVISIBLE);
+								
+							}
+						});
+						builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						});
+						AlertDialog alert = builder.create();
+						alert.show();
+					}
+					else {
+						AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+						builder.setMessage("Are you sure you want to delete " + vox.getDisplayName() + "?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Delete Voice", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								File f = new File(vox.getPath());
+								if(f.delete()) {
+									refresh();
+									Toast toast = Toast.makeText(mContext, "Voice Deleted", Toast.LENGTH_SHORT);
+									toast.show();
+								}
+							}
+						});
+						builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						});
+						AlertDialog alert = builder.create();
+						alert.show();
+					}
+				}
+			});
+
+			return convertView;
+		}
+
+	}
+	
+	BroadcastReceiver onComplete=new BroadcastReceiver() {
+		public void onReceive(Context ctxt, Intent intent) {
+			Toast toast = Toast.makeText(ctxt, "Flite TTS Voice  Downloaded!", Toast.LENGTH_SHORT);
+			toast.show();
+			mListAdapter.refresh();
+		}
+	};
+
+}
+
+/*
 	private final static String LOG_TAG = "Flite_Java_" + DownloadVoiceData.class.getSimpleName();	
-	private final static String FLITE_DATA_PATH = CheckVoiceData.getDataPath();
+	private final static String FLITE_DATA_PATH = Voice.getDataPath();
 
 	private ArrayAdapter<CharSequence> mVoiceList;
 	private ArrayAdapter<CharSequence> mVoiceDescList;
@@ -103,10 +250,10 @@ public class DownloadVoiceData extends Activity {
 
 	}
 
-	/* Look at the voices available in flite, 
-	 * and compare them to voices already installed.
-	 * The remaining voices will be available for download.
-	 */
+	 Look at the voices available in flite, 
+ * and compare them to voices already installed.
+ * The remaining voices will be available for download.
+
 	private void populateVoiceList() {
 		mVoiceList.clear();
 		mVoiceDescList.clear();
@@ -261,3 +408,4 @@ public class DownloadVoiceData extends Activity {
 	}
 
 }
+ */

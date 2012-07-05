@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, Flite</string>
-    <string name="app_name">Flite Engine</string>
 
+    <string name="hello">Hello World, Flite</string>
+    <string name="app_name">Flite TTS Engine</string>
     <string name="eng_sample">This is a sample English sentence for Flite synthesizer.</string>
     <string name="tts_settings">General TTS settings</string>
-
     <string name="sync_voice_list">Live update</string>
     <string name="sync_voice_list_summary">Download information about latest supported languages</string>
     <string name="flite_manager">Flite Manager</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_manage_voice_downloads">Manage Flite Voices</string>
+    <string name="action">Action</string>
+    <string name="flite_voice_manager">Flite TTS Voice Management</string>
+
 </resources>
