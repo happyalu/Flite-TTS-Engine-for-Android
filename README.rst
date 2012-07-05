@@ -80,11 +80,6 @@ Application Build Steps
     ./configure --with-langvox=android --target=mips-android
     make
 
-*Build JNI code in this app's code* ::
-
-    cd $FLITE_APP_DIR
-    $ANDROID_NDK/ndk-build
-
 *Build installable application package (debug mode)* ::
 
     cd $FLITE_APP_DIR
