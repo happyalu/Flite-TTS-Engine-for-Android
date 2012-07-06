@@ -9,9 +9,10 @@
  
     <ImageView
        android:id="@+id/dashboard_icon_img"
-       android:layout_width="fill_parent"
+       android:layout_width="wrap_content"
        android:layout_height="96.0dip"
-       android:tint="#FF8040"
+       android:tint="#40C0FF"
+       android:background="@drawable/dashboard_button_background" 
        android:scaleType="fitCenter" />
  
     <TextView

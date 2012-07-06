@@ -247,6 +247,14 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
   {
     LOGI("TtsEngine::isLanguageAvailable: lang=%s, country=%s, variant=%s", lang, country, variant);
 
+    // The hack for java to make sure flite is available.
+    // Only flite can respond "YES" to the language "eng-USA-is_flite_available"
+    if ( (strcmp(lang, "eng") == 0) &&
+         (strcmp(country, "USA") == 0) &&
+         (strcmp(variant, "is_flite_available") == 0) ) {
+      return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
+    }
+    
     // The hack to set streaming:
     // If language and country are not set, then variant will be
     // interpreted as being "stream" or "nostream" to set the appropriate parameters.

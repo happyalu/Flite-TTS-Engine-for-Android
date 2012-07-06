@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="8dip"
+    android:paddingRight="8dip" >
+
+    <Spinner
+        android:id="@+id/voice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dip" />
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:stackFromBottom="true"
+        android:transcriptMode="normal" />
+        <!-- android:background="@drawable/border_ui" -->
+    
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dip" >
+
+        <EditText
+            android:id="@+id/userText"
+            android:layout_width="wrap_content"
+            android:layout_height="50dip"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/sendButton"
+            android:inputType="textAutoCorrect" />
+
+        <ImageButton
+            android:id="@+id/sendButton"
+            android:layout_width="wrap_content"
+            android:layout_height="50dip"
+            android:layout_alignParentRight="true"
+            android:layout_gravity="bottom"
+            android:background="@drawable/voice_imagebutton_background"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_send"
+            android:tint="#40C0FF" />
+
+    </RelativeLayout>
+
+    <!--
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <EditText
+            android:id="@+id/userText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/sendButton"
+            android:inputType="textAutoCorrect" />
+        
+        <ImageButton
+            android:id="@+id/sendButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/ic_action_search" />
+
+    </RelativeLayout>
+    -->
+
+</LinearLayout>

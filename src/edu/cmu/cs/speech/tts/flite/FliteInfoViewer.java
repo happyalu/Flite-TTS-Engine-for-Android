@@ -18,6 +18,7 @@ public class FliteInfoViewer extends ListActivity {
 	private final static String LOG_TAG = "Flite_Java_" + FliteInfoViewer.class.getSimpleName();
 	private NativeFliteTTS mFliteEngine;
 	private SimpleCursorAdapter mAdapter;
+	private float mBenchmark = -1; 
 
 	/** Called when the activity is first created. */
 	@Override
@@ -60,9 +61,23 @@ public class FliteInfoViewer extends ListActivity {
 	}
 
 	private void populateInformation() {
-		final String[] Info = new String[] {"Build ABI", "Benchmark" };
-		final String[] Data = new String[] {mFliteEngine.getNativeABI(),
-				mFliteEngine.getNativeBenchmark()+" times faster than real time"};
+		if (mBenchmark <0) {
+			mBenchmark = mFliteEngine.getNativeBenchmark();
+		}
+		final String[] Info = new String[] {
+				"Android Version",
+				"Build ABI", 
+				"Benchmark",
+				"Copyright",
+				"URL",
+				};
+		final String[] Data = new String[] {	
+				android.os.Build.VERSION.RELEASE,
+				android.os.Build.CPU_ABI,
+				mBenchmark + " times faster than real time",
+				"© (1999-2012) Carnegie Mellon University",
+				"www.cmuflite.org",
+				};
 		
 		runOnUiThread(new Runnable() {
 			
