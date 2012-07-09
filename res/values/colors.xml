@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-     <color name="black">#000</color>
-     <color name="blue">#00f</color>
-     <color name="red">#f00</color>
      <color name="gray">#999999</color>
      <color name="chrome">#FFC040</color>
      <color name="themeblue">#40C0FF</color>
