@@ -65,18 +65,23 @@ public class FliteInfoViewer extends ListActivity {
 			mBenchmark = mFliteEngine.getNativeBenchmark();
 		}
 		final String[] Info = new String[] {
-				"Android Version",
-				"Build ABI", 
-				"Benchmark",
 				"Copyright",
 				"URL",
+				"RUNTIME_HEADER",
+				"Android Version",
+				"Build ABI", 
+				"Phone Model",
+				"Benchmark",
 				};
 		final String[] Data = new String[] {	
-				android.os.Build.VERSION.RELEASE,
-				android.os.Build.CPU_ABI,
-				mBenchmark + " times faster than real time",
 				"© (1999-2012) Carnegie Mellon University",
 				"www.cmuflite.org",
+				"",
+				android.os.Build.VERSION.RELEASE,
+				android.os.Build.CPU_ABI,
+				android.os.Build.MODEL,
+				mBenchmark + " times faster than real time",
+
 				};
 		
 		runOnUiThread(new Runnable() {
@@ -102,18 +107,44 @@ public class FliteInfoViewer extends ListActivity {
 		}
 		
 		@Override
+        public int getViewTypeCount() {
+            return 2;
+        }
+		
+		@Override
+        public int getItemViewType(int position) {
+            if (values[position] == "RUNTIME_HEADER") {
+            	return 0;
+            }
+            else return 1;
+        }
+		
+		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LayoutInflater inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	 
-			View rowView = inflater.inflate(R.layout.flite_info, parent, false);
-			TextView infoType = (TextView) rowView.findViewById(R.id.infotitle);
-			TextView infoDetail = (TextView) rowView.findViewById(R.id.infodetail);
 			
-			infoType.setText(values[position]);
-			infoDetail.setText(data[position]);
+			if (convertView == null) {
+				convertView = inflater.inflate(R.layout.flite_info, parent, false);
+			}
+			
+			TextView infoType = (TextView) convertView.findViewById(R.id.infotitle);
+			TextView infoDetail = (TextView) convertView.findViewById(R.id.infodetail);
+			
+			if (values[position] == "RUNTIME_HEADER") {
+				infoType.setText("Runtime Information");
+				infoType.setClickable(false);
+				
+				infoType.setTextColor(getResources().getColor(R.color.themeblue));
+				infoType.setPadding(0,20,0,5);
+				infoDetail.setVisibility(View.GONE);
+			}
+			else {
+				infoType.setText(values[position]);
+				infoDetail.setText(data[position]);
+			}
 	 
-			return rowView;
+			return convertView;
 		}
 		
 	}
