@@ -524,7 +524,7 @@ float getBenchmark() {
   timespec start, end;
   float totalmilliseconds = 0;
   float wavlen;
-  int num_trials = 10;
+  int num_trials = 3;
 
   const char* text =
       "This sentence is the being synthesized for a benchmark computation.";

@@ -42,8 +42,10 @@ import java.util.Locale;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
@@ -244,11 +246,14 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 		
 		if (!success) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);  
-			builder.setMessage("Flite Engine could not be initialized. Check the Text-To-Speech settings on your phone to make sure that Flite is enabled.");  
-			builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {  
+			builder.setMessage("Flite TTS Engine could not be initialized. Check that Flite is enabled on your phone!. In some cases, you may have to select flite as the default engine.");  
+			builder.setNegativeButton("Open TTS Settings", new DialogInterface.OnClickListener() {  
 				@Override  
 				public void onClick(DialogInterface dialog, int which) {  
 					dialog.cancel(); 
+					Intent intent = new Intent();
+					intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.TextToSpeechSettings"));
+			        startActivity(intent);
 					finish();
 				}  
 			});  

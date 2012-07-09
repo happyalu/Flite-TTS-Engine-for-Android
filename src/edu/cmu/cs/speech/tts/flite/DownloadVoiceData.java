@@ -177,7 +177,7 @@ public class DownloadVoiceData extends ListActivity {
 					final Voice vox = mVoiceList.get(position);
 					if (!vox.isAvailable()) {
 						AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-						builder.setMessage("WARNING: Download Size up to 3MB");
+						builder.setMessage("Data Alert: Download Size up to 3MB.");
 						builder.setCancelable(false);
 						builder.setPositiveButton("Download Voice", new DialogInterface.OnClickListener() {
 							@Override
@@ -212,7 +212,7 @@ public class DownloadVoiceData extends ListActivity {
 					}
 					else {
 						AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-						builder.setMessage("Sure? Deleting \n" + vox.getDisplayName());
+						builder.setMessage("Sure? Deleting " + vox.getDisplayName());
 						builder.setCancelable(false);
 						builder.setPositiveButton("Delete Voice", new DialogInterface.OnClickListener() {
 							@Override
@@ -234,6 +234,14 @@ public class DownloadVoiceData extends ListActivity {
 						AlertDialog alert = builder.create();
 						alert.show();
 					}
+				}
+			});
+			
+			convertView.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					actionButton.performClick();
 				}
 			});
 
