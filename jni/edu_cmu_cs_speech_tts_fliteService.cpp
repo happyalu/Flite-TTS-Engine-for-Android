@@ -279,15 +279,6 @@ extern "C" {
     }
   }
 
-  JNIEXPORT jstring
-  JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetABI(
-      JNIEnv *env, jobject object) {
-    DEBUG_LOG_FUNCTION;
-
-    jstring abi_string = env->NewStringUTF(ANDROID_BUILD_ABI);
-    return abi_string;
-  }
-
   JNIEXPORT jfloat
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetBenchmark(
       JNIEnv *env, jobject object) {

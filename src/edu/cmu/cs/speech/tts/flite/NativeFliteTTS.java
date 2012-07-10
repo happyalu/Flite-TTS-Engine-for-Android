@@ -84,10 +84,6 @@ public class NativeFliteTTS {
         nativeStop();
     }
     
-    public String getNativeABI() {
-    	return nativeGetABI();
-    }
-    
     public float getNativeBenchmark() {
 		return nativeGetBenchmark();
 	}
@@ -126,7 +122,6 @@ public class NativeFliteTTS {
 	private native final boolean nativeSynthesize(String text);
 	private native final boolean nativeStop();
 	
-	private native final String nativeGetABI();
 	private native final float nativeGetBenchmark();
 
 

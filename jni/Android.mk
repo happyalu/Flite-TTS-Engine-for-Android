@@ -74,8 +74,6 @@ LOCAL_LDLIBS:= -llog \
 	$(FLITE_LIB_DIR)/libflite_usenglish.a \
 	$(FLITE_LIB_DIR)/libflite.a \
 
-LOCAL_CFLAGS = -DANDROID_BUILD_ABI=\"$(TARGET_ARCH_ABI)\"
-
 ifeq ("$(APP_OPTIM)", "debug")
   LOCAL_CFLAGS += -DFLITE_DEBUG_ENABLED=1
 else

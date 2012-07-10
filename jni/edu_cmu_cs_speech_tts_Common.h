@@ -50,11 +50,6 @@
 #define FLITE_DEBUG_ENABLED 0
 #endif
 
-#ifndef ANDROID_BUILD_ABI
-// This tells us the target ABI for which code was compiled
-#define ANDROID_BUILD_ABI "unknown"
-#endif
-
 #if FLITE_DEBUG_ENABLED
 
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)

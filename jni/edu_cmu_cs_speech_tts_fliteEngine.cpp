@@ -158,7 +158,6 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
   LOGI("TtsEngine::init start");
 
   LOGI("Compilation Build Date: %s %s", __DATE__, __TIME__);
-  LOGI("Compilation Platform: %s", ANDROID_BUILD_ABI);
 
   // First make sure we receive the data directory. That's very crucial.
   if ((engineConfig != NULL) && (strlen(engineConfig) > 0)) {
