@@ -38,8 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include "./edu_cmu_cs_speech_tts_fliteVoices.h"
-#include "./edu_cmu_cs_speech_tts_Common.h"
+#include "./edu_cmu_cs_speech_tts_flite_voices.h"
+#include "./edu_cmu_cs_speech_tts_logging.h"
 #include <stdint.h>
 
 namespace FliteEngine {

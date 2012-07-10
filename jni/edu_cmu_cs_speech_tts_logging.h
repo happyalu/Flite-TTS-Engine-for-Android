@@ -34,7 +34,7 @@
 /*               Date:  March 2010                                       */
 /*************************************************************************/
 /*                                                                       */
-/*  Common macros and functions, such as logging                         */
+/*  Common macros and functions, for logging purposes                    */
 /*                                                                       */
 /*************************************************************************/
 

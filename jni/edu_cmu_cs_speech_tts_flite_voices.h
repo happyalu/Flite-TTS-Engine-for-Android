@@ -40,7 +40,7 @@
 #ifndef JNI_EDU_CMU_CS_SPEECH_TTS_FLITEVOICES_H_
 #define JNI_EDU_CMU_CS_SPEECH_TTS_FLITEVOICES_H_
 
-#include "./edu_cmu_cs_speech_tts_String.h"
+#include "./edu_cmu_cs_speech_tts_string.h"
 
 #include <flite.h>
 #include <tts/tts.h>

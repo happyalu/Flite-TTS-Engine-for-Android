@@ -38,7 +38,7 @@
 /*                                                                       */
 /*************************************************************************/
 
-#include "./edu_cmu_cs_speech_tts_String.h"
+#include "./edu_cmu_cs_speech_tts_string.h"
 #include<string.h>
 #include<stdio.h>
 

@@ -62,10 +62,12 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := ttsflite
 
-LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_fliteService.cpp \
-	edu_cmu_cs_speech_tts_fliteEngine.cpp \
-	edu_cmu_cs_speech_tts_fliteVoices.cpp \
-	edu_cmu_cs_speech_tts_String.cpp
+LOCAL_CPP_EXTENSION := .cc
+
+LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_flite_service.cc \
+	edu_cmu_cs_speech_tts_flite_engine.cc \
+	edu_cmu_cs_speech_tts_flite_voices.cc \
+	edu_cmu_cs_speech_tts_string.cc
 
 LOCAL_C_INCLUDES := $(FLITEDIR)/include
 

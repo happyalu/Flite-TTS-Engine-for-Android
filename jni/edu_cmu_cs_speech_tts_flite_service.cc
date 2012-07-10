@@ -45,8 +45,8 @@
 #include <flite.h>
 
 // Local headers
-#include "./edu_cmu_cs_speech_tts_Common.h"
-#include "./edu_cmu_cs_speech_tts_String.h"
+#include "./edu_cmu_cs_speech_tts_logging.h"
+#include "./edu_cmu_cs_speech_tts_string.h"
 #include "./tts/tts.h"
 
 #ifdef LOG_TAG
