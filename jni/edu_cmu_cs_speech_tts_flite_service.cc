@@ -49,6 +49,7 @@
 #include "./edu_cmu_cs_speech_tts_string.h"
 #include "./tts/tts.h"
 
+// Have a different logging tag for the JNI service
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
@@ -61,58 +62,59 @@ jfieldID FIELD_mNativeData;
 
 class SynthJNIData {
  public:
-  JNIEnv*                         env;
-  jobject                         tts_ref;
-  android_tts_engine_funcs_t*     mFliteEngine;
-  int8_t*                         mBuffer;
-  size_t                          mBufferSize;
+  JNIEnv*                         env_;
+  jobject                         tts_ref_;
+  android_tts_engine_funcs_t*     flite_engine_;
+  int8_t*                         audio_buffer_;
+  size_t                          audio_buffer_size_;
 
   SynthJNIData() {
     DEBUG_LOG_FUNCTION;
-    env = NULL;
-    tts_ref = NULL;
-    mFliteEngine = NULL;
-    mBufferSize = 2048;
-    mBuffer = new int8_t[mBufferSize];
-    memset(mBuffer, 0, mBufferSize);
+    env_ = NULL;
+    tts_ref_ = NULL;
+    flite_engine_ = NULL;
+    audio_buffer_size_ = 2048;
+    audio_buffer_ = new int8_t[audio_buffer_size_];
+    memset(audio_buffer_, 0, audio_buffer_size_);
   }
 
   ~SynthJNIData() {
     DEBUG_LOG_FUNCTION;
 
-    if (mFliteEngine) {
-      mFliteEngine->shutdown(mFliteEngine);
-      mFliteEngine = NULL;
+    if (flite_engine_) {
+      flite_engine_->shutdown(flite_engine_);
+      flite_engine_ = NULL;
     }
 
-    delete mBuffer;
+    delete audio_buffer_;
   }
 };
 
 /* Callback from flite.  Should call back to the TTS API */
-static android_tts_callback_status_t ttsSynthDoneCB(
-    void **pUserdata, uint32_t rate,
-    android_tts_audio_format_t format, int channelCount,
-    int8_t **pWav, size_t *pBufferSize,
+static android_tts_callback_status_t TtsSynthDoneCallback(
+    void **user_data, uint32_t rate,
+    android_tts_audio_format_t format, int channel_count,
+    int8_t **wave_data, size_t *buffer_size,
     android_tts_synth_status_t status) {
   DEBUG_LOG_FUNCTION;
 
 
-  if (pUserdata == NULL) {
-    LOGE("ttsSynthDoneCB: userdata == NULL");
+  if (user_data == NULL) {
+    LOGE("TtsSynthDoneCallback: userdata == NULL");
     return ANDROID_TTS_CALLBACK_HALT;
   }
 
-  SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(*pUserdata);
-  JNIEnv *env = pJNIData->env;
+  SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(*user_data);
+  JNIEnv *env = pJNIData->env_;
 
-  jbyteArray audioData = env->NewByteArray(*pBufferSize);
-  env->SetByteArrayRegion(audioData, 0, *pBufferSize,
-                          reinterpret_cast<jbyte*>(*pWav));
-  env->CallVoidMethod(pJNIData->tts_ref, METHOD_nativeSynthCallback, audioData);
+  jbyteArray audio_data = env->NewByteArray(*buffer_size);
+  env->SetByteArrayRegion(audio_data, 0, *buffer_size,
+                          reinterpret_cast<jbyte*>(*wave_data));
+  env->CallVoidMethod(pJNIData->tts_ref_,
+                      METHOD_nativeSynthCallback, audio_data);
 
   if (status == ANDROID_TTS_SYNTH_DONE) {
-    env->CallVoidMethod(pJNIData->tts_ref, METHOD_nativeSynthCallback, NULL);
+    env->CallVoidMethod(pJNIData->tts_ref_, METHOD_nativeSynthCallback, NULL);
     return ANDROID_TTS_CALLBACK_HALT;
   }
 
@@ -154,19 +156,19 @@ extern "C" {
       JNIEnv *env, jobject object, jstring path) {
     DEBUG_LOG_FUNCTION;
 
-    const char *pathString = env->GetStringUTFChars(path, 0);
+    const char *path_string = env->GetStringUTFChars(path, 0);
 
-    SynthJNIData* pJNIData = new SynthJNIData();
-    pJNIData->mFliteEngine = android_getTtsEngine()->funcs;
+    SynthJNIData* jni_data = new SynthJNIData();
+    jni_data->flite_engine_ = android_getTtsEngine()->funcs;
 
     android_tts_result_t result =
-        pJNIData->mFliteEngine->init(pJNIData->mFliteEngine,
-                                     ttsSynthDoneCB, pathString);
+        jni_data->flite_engine_->init(jni_data->flite_engine_,
+                                     TtsSynthDoneCallback, path_string);
 
     env->SetIntField(object, FIELD_mNativeData,
-                     reinterpret_cast<int>(pJNIData));
+                     reinterpret_cast<int>(jni_data));
 
-    env->ReleaseStringUTFChars(path, pathString);
+    env->ReleaseStringUTFChars(path, path_string);
     return result;
   }
 
@@ -175,9 +177,9 @@ extern "C" {
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
 
-    int jniData = env->GetIntField(object, FIELD_mNativeData);
-    SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
-    android_tts_engine_funcs_t* flite_engine = pJNIData->mFliteEngine;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
     return flite_engine->shutdown(flite_engine);
   }
@@ -193,9 +195,9 @@ extern "C" {
     const char *c_country = env->GetStringUTFChars(country, NULL);
     const char *c_variant = env->GetStringUTFChars(variant, NULL);
 
-    int jniData = env->GetIntField(object, FIELD_mNativeData);
-    SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
-    android_tts_engine_funcs_t* flite_engine = pJNIData->mFliteEngine;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
     android_tts_support_result_t result =
         flite_engine->isLanguageAvailable(flite_engine, c_language,
@@ -219,9 +221,9 @@ extern "C" {
     const char *c_country = env->GetStringUTFChars(country, NULL);
     const char *c_variant = env->GetStringUTFChars(variant, NULL);
 
-    int jniData = env->GetIntField(object, FIELD_mNativeData);
-    SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
-    android_tts_engine_funcs_t* flite_engine = pJNIData->mFliteEngine;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
     android_tts_result_t result =
         flite_engine->setLanguage(flite_engine, c_language,
@@ -244,20 +246,22 @@ extern "C" {
       JNIEnv *env, jobject object, jstring text) {
     DEBUG_LOG_FUNCTION;
 
-    int jniData = env->GetIntField(object, FIELD_mNativeData);
-    SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
-    android_tts_engine_funcs_t* flite_engine = pJNIData->mFliteEngine;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
     const char *c_text = env->GetStringUTFChars(text, NULL);
 
-    pJNIData->env = env;
-    pJNIData->tts_ref = env->NewGlobalRef(object);
+    jni_data->env_ = env;
+    jni_data->tts_ref_ = env->NewGlobalRef(object);
 
     android_tts_result_t result =
-        flite_engine->synthesizeText(flite_engine, c_text, pJNIData->mBuffer,
-                                     pJNIData->mBufferSize, pJNIData);
+        flite_engine->synthesizeText(flite_engine, c_text,
+                                     jni_data->audio_buffer_,
+                                     jni_data->audio_buffer_size_,
+                                     jni_data);
 
-    env->DeleteGlobalRef(pJNIData->tts_ref);
+    env->DeleteGlobalRef(jni_data->tts_ref_);
     return result;
   }
 
@@ -266,9 +270,9 @@ extern "C" {
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
 
-    int jniData = env->GetIntField(object, FIELD_mNativeData);
-    SynthJNIData* pJNIData = reinterpret_cast<SynthJNIData*>(jniData);
-    android_tts_engine_funcs_t* flite_engine = pJNIData->mFliteEngine;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
     android_tts_result_t result = flite_engine->stop(flite_engine);
 
