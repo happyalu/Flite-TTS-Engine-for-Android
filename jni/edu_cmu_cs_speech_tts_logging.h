@@ -38,8 +38,8 @@
 /*                                                                       */
 /*************************************************************************/
 
-#ifndef JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_
-#define JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_
+#ifndef JNI_EDU_CMU_CS_SPEECH_TTS_LOGGING_H_
+#define JNI_EDU_CMU_CS_SPEECH_TTS_LOGGING_H_
 
 /* Set up Logging macros */
 #include <android/log.h>
@@ -67,4 +67,4 @@
 #define LOGW(...)
 
 #endif
-#endif  // JNI_EDU_CMU_CS_SPEECH_TTS_COMMON_H_
+#endif  // JNI_EDU_CMU_CS_SPEECH_TTS_LOGGING_H_
