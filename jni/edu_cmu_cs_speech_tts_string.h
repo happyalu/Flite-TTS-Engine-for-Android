@@ -46,7 +46,7 @@ namespace FliteEngine {
 
 class String {
  private:
-  char* strdata;
+  char* str_data_;
  public:
   String(const char* str = NULL);  // NOLINT : Explicit constructor okay.
   String(const String& rhs);

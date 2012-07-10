@@ -46,38 +46,38 @@ namespace FliteEngine {
 
 String::String(const char* str) {
   if (str != NULL) {
-    strdata = new char[strlen(str) + 1];
-    if (strdata != NULL)
-      snprintf(strdata, strlen(str) + 1, "%s", str);
+    str_data_ = new char[strlen(str) + 1];
+    if (str_data_ != NULL)
+      snprintf(str_data_, strlen(str) + 1, "%s", str);
   } else {
-    strdata = NULL;
+    str_data_ = NULL;
   }
 }
 
 String::String(const String& rhs) {
-  if (rhs.strdata == NULL) {
-    strdata = NULL;
+  if (rhs.str_data_ == NULL) {
+    str_data_ = NULL;
   } else {
-    strdata = new char[strlen(rhs.strdata)+1];
-    if (strdata != NULL)
-      snprintf(strdata, strlen(rhs.strdata) + 1, "%s", rhs.strdata);
+    str_data_ = new char[strlen(rhs.str_data_)+1];
+    if (str_data_ != NULL)
+      snprintf(str_data_, strlen(rhs.str_data_) + 1, "%s", rhs.str_data_);
   }
 }
 
 String::~String() {
-  if (strdata != NULL) {
-    delete[] strdata;
+  if (str_data_ != NULL) {
+    delete[] str_data_;
   }
 }
 
 String& String::operator=(const String &rhs) {
   // Don't assign if rhs is the same object!
   if (this != &rhs) {
-    if (strdata != NULL)
-      delete[] strdata;
-    strdata = new char[strlen(rhs.strdata)+1];
-    if (strdata != NULL)
-      snprintf(strdata, strlen(rhs.strdata) + 1, "%s", rhs.strdata);
+    if (str_data_ != NULL)
+      delete[] str_data_;
+    str_data_ = new char[strlen(rhs.str_data_)+1];
+    if (str_data_ != NULL)
+      snprintf(str_data_, strlen(rhs.str_data_) + 1, "%s", rhs.str_data_);
   }
   return *this;
 }
@@ -86,16 +86,16 @@ String String::operator+(const String &other) {
   int newlength;
   char* s;
 
-  if (strdata == NULL)
+  if (str_data_ == NULL)
     return other;
 
-  if (other.strdata == NULL)
+  if (other.str_data_ == NULL)
     return *this;
 
-  newlength = strlen(strdata) + strlen(other.strdata) + 1;
+  newlength = strlen(str_data_) + strlen(other.str_data_) + 1;
 
   s = new char[newlength];
-  snprintf(s, newlength, "%s%s", strdata, other.strdata);
+  snprintf(s, newlength, "%s%s", str_data_, other.str_data_);
 
   String addedStr = String(s);
   delete[] s;
@@ -103,16 +103,16 @@ String String::operator+(const String &other) {
 }
 
 bool String::operator==(const String &other) const {
-    if ( (strdata == NULL) or (other.strdata == NULL) )
+    if ( (str_data_ == NULL) or (other.str_data_ == NULL) )
       return false;
 
-    if (strcmp(strdata, other.strdata) == 0)
+    if (strcmp(str_data_, other.str_data_) == 0)
       return true;
     else
       return false;
 }
 
 const char* String::c_str() {
-    return strdata;
+    return str_data_;
 }
 }  // End Namespace
