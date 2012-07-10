@@ -43,26 +43,26 @@
 #include <stdint.h>
 
 namespace FliteEngine {
-const char* Voice::getLanguage() {
-  return mLanguage.c_str();
+const char* Voice::GetLanguage() {
+  return language_.c_str();
 }
 
-const char* Voice::getCountry() {
-  return mCountry.c_str();
+const char* Voice::GetCountry() {
+  return country_.c_str();
 }
 
-const char* Voice:: getVariant() {
-  return mVariant.c_str();
+const char* Voice::GetVariant() {
+  return variant_.c_str();
 }
 
-cst_voice* Voice::getFliteVoice() {
-  return mFliteVoice;
+cst_voice* Voice::GetFliteVoice() {
+  return flite_voice_;
 }
 
-bool Voice::isSameLocaleAs(String flang, String fcountry, String fvar) {
-  if ((mLanguage == flang) &&
-      (mCountry == fcountry) &&
-      (mVariant == fvar))
+bool Voice::IsSameLocaleAs(String flang, String fcountry, String fvar) {
+  if ((language_ == flang) &&
+      (country_ == fcountry) &&
+      (variant_ == fvar))
     return true;
   else
     return false;
@@ -72,30 +72,30 @@ LinkedVoice::LinkedVoice(const String flang, const String fcountry,
                          const String fvar,
                          t_voice_register_function freg,
                          t_voice_unregister_function funreg) {
-  mLanguage = flang;
-  mCountry = fcountry;
-  mVariant = fvar;
-  mFliteVoice = NULL;
-  mRegfunc = freg;
-  mUnregfunc = funreg;
+  language_ = flang;
+  country_ = fcountry;
+  variant_ = fvar;
+  flite_voice_ = NULL;
+  voice_register_function_ = freg;
+  voice_unregister_function_ = funreg;
 }
 
 LinkedVoice::~LinkedVoice() {
   LOGI("Voice::~Voice: unregistering voice");
-  unregisterVoice();
+  UnregisterVoice();
   LOGI("Voice::~Voice: voice unregistered");
 }
 
-android_tts_support_result_t LinkedVoice::getLocaleSupport(String flang,
+android_tts_support_result_t LinkedVoice::GetLocaleSupport(String flang,
                                                            String fcountry,
                                                            String fvar) {
   android_tts_support_result_t support = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
-  if (mLanguage == flang) {
+  if (language_ == flang) {
     support = ANDROID_TTS_LANG_AVAILABLE;
-    if (mCountry == fcountry) {
+    if (country_ == fcountry) {
       support = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
-      if (mVariant == fvar) {
+      if (variant_ == fvar) {
         support = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
       }
     }
@@ -105,52 +105,52 @@ android_tts_support_result_t LinkedVoice::getLocaleSupport(String flang,
 }
 
 
-cst_voice* LinkedVoice::registerVoice() {
-  LOGI("Voice::registerVoice for %s", mVariant.c_str());
-  mFliteVoice = mRegfunc(flite_voxdir_path);
-  LOGI("Voice::registerVoice done");
-  return mFliteVoice;
+cst_voice* LinkedVoice::RegisterVoice() {
+  LOGI("Voice::RegisterVoice for %s", variant_.c_str());
+  flite_voice_ = voice_register_function_(flite_voxdir_path);
+  LOGI("Voice::RegisterVoice done");
+  return flite_voice_;
 }
 
-void LinkedVoice::unregisterVoice() {
-  LOGI("Calling flite unregister for %s", mVariant.c_str());
-  if (mFliteVoice == NULL) return;  // Voice not registered
-  mUnregfunc(mFliteVoice);
+void LinkedVoice::UnregisterVoice() {
+  LOGI("Calling flite unregister for %s", variant_.c_str());
+  if (flite_voice_ == NULL) return;  // Voice not registered
+  voice_unregister_function_(flite_voice_);
   LOGI("Done unregistering voice in flite");
-  mFliteVoice = NULL;
+  flite_voice_ = NULL;
 }
 
 ClustergenVoice::ClustergenVoice() {
   LOGI("Creating a generic clustergen voice loader.");
-  mFliteVoice = NULL;
+  flite_voice_ = NULL;
 }
 
 ClustergenVoice::~ClustergenVoice() {
   LOGI("Unloading generic clustergen voice.");
 
-  if (mFliteVoice != NULL) {
+  if (flite_voice_ != NULL) {
     // We have something loaded in there. Let's unregister it.
-    unregisterVoice();
+    UnregisterVoice();
   }
 }
 
-void ClustergenVoice::unregisterVoice() {
-  if (mFliteVoice != NULL) {
+void ClustergenVoice::UnregisterVoice() {
+  if (flite_voice_ != NULL) {
     // TODO(aup): Flite 1.5.6 does not support unregistering a linked voice.
     // We do nothing here, but there is potential memory issue.
 
     LOGW("Not calling unregister for clustergen voice");
 
-    // cst_cg_unload_voice(mFliteVoice);
+    // cst_cg_unload_voice(flite_voice_);
     // LOGD("Flite voice unregistered.");
-    mFliteVoice = NULL;
-    mLanguage = "";
-    mCountry = "";
-    mVariant = "";
+    flite_voice_ = NULL;
+    language_ = "";
+    country_ = "";
+    variant_ = "";
   }
 }
 
-String get_default_variant_in_countrydir(String dirname) {
+String GetDefaultVariantInCountryDirectory(String dirname) {
   int return_code;
   DIR *dir;
   struct dirent *entry;
@@ -182,12 +182,12 @@ String get_default_variant_in_countrydir(String dirname) {
   return "";
 }
 
-String get_default_country_in_languagedir(String dirname) {
+String GetDefaultCountryInLanguageDirectory(String dirname) {
   int return_code;
   DIR *dir;
   struct dirent *entry;
   struct dirent *result;
-  String defaultVoice;
+  String default_voice;
 
   if ((dir = opendir(dirname.c_str())) == NULL) {
     LOGE("%s could not be opened.\n ", dirname.c_str());
@@ -203,8 +203,8 @@ String get_default_country_in_languagedir(String dirname) {
         continue;
       if (entry->d_type == DT_DIR) {
         String newdir = dirname + "/" + String(entry->d_name);
-        defaultVoice = get_default_variant_in_countrydir(newdir);
-        if (!(defaultVoice == "")) {
+        default_voice = GetDefaultVariantInCountryDirectory(newdir);
+        if (!(default_voice == "")) {
           String ret = String(entry->d_name);
           closedir(dir);
           return ret;
@@ -215,7 +215,7 @@ String get_default_country_in_languagedir(String dirname) {
   return "";
 }
 
-bool file_exists(String filename) {
+bool FileExists(String filename) {
   int fd;
   fd = open(filename.c_str(), O_RDONLY);
   if (fd < 0)
@@ -227,120 +227,122 @@ bool file_exists(String filename) {
 // Check that the required clustergen file is present on disk and
 // return the information.
 
-android_tts_support_result_t ClustergenVoice::getLocaleSupport(String flang,
+android_tts_support_result_t ClustergenVoice::GetLocaleSupport(String flang,
                                                                String fcountry,
                                                                String fvar) {
-  LOGI("ClustergenVoice::getLocaleSupport for lang=%s country=%s var=%s",
+  LOGI("ClustergenVoice::GetLocaleSupport for lang=%s country=%s var=%s",
        flang.c_str(),
        fcountry.c_str(),
        fvar.c_str());
 
-  android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
+  android_tts_support_result_t
+      language_support = ANDROID_TTS_LANG_NOT_SUPPORTED;
+
   String path = flite_voxdir_path;
   path = path + "/cg/" + flang;
   LOGV("Path: %s", path.c_str());
-  if (!(get_default_country_in_languagedir(path)== "")) {
+  if (!(GetDefaultCountryInLanguageDirectory(path)== "")) {
     // language exists
-    languageSupport = ANDROID_TTS_LANG_AVAILABLE;
+    language_support = ANDROID_TTS_LANG_AVAILABLE;
     path = path + "/" + fcountry;
     LOGV("Path: %s", path.c_str());
-    if (!(get_default_variant_in_countrydir(path)== "")) {
+    if (!(GetDefaultVariantInCountryDirectory(path)== "")) {
       LOGV("Path: %s", path.c_str());
       // country exists
-      languageSupport = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
+      language_support = ANDROID_TTS_LANG_COUNTRY_AVAILABLE;
       path = path + "/" + fvar + ".cg.flitevox";
       LOGV("Path: %s", path.c_str());
-      if (file_exists(path)) {
-        languageSupport = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
+      if (FileExists(path)) {
+        language_support = ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
         LOGV("%s is available", path.c_str());
       }
     }
   }
-  return languageSupport;
+  return language_support;
 }
 
-android_tts_result_t ClustergenVoice::setLanguage(String flang,
+android_tts_result_t ClustergenVoice::SetLanguage(String flang,
                                                   String fcountry,
                                                   String fvar) {
-  LOGI("ClustergenVoice::setLanguage: lang=%s country=%s variant=%s",
+  LOGI("ClustergenVoice::SetLanguage: lang=%s country=%s variant=%s",
        flang.c_str(),
        fcountry.c_str(),
        fvar.c_str());
 
   // But check that the current voice itself isn't being requested.
-  if ((mLanguage == flang) &&
-     (mCountry == fcountry) &&
-     (mVariant == fvar)) {
-    LOGW("ClustergenVoice::setLanguage: %s",
+  if ((language_ == flang) &&
+     (country_ == fcountry) &&
+     (variant_ == fvar)) {
+    LOGW("ClustergenVoice::SetLanguage: %s",
          "Voice being requested is already registered. Doing nothing.");
     return ANDROID_TTS_SUCCESS;
   }
 
   // If some voice is already loaded, unload it.
-  unregisterVoice();
+  UnregisterVoice();
 
-  android_tts_support_result_t languageSupport;
-  languageSupport = getLocaleSupport(flang, fcountry, fvar);
+  android_tts_support_result_t language_support;
+  language_support = GetLocaleSupport(flang, fcountry, fvar);
   String path = flite_voxdir_path;
 
-  if (languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
+  if (language_support == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
     path = path + "/cg/" + flang + "/" + fcountry + "/" + fvar + ".cg.flitevox";
-    mLanguage = flang;
-    mCountry = fcountry;
-    mVariant = fvar;
+    language_ = flang;
+    country_ = fcountry;
+    variant_ = fvar;
 
-    LOGW("ClustergenVoice::setLanguage: Exact voice found.");
-  } else if (languageSupport == ANDROID_TTS_LANG_COUNTRY_AVAILABLE) {
-    LOGW("ClustergenVoice::setLanguage: %s",
+    LOGW("ClustergenVoice::SetLanguage: Exact voice found.");
+  } else if (language_support == ANDROID_TTS_LANG_COUNTRY_AVAILABLE) {
+    LOGW("ClustergenVoice::SetLanguage: %s",
          "Exact voice not found. Only Language and country available.");
     path = path + "/cg/" + flang + "/" + fcountry;
-    String var = get_default_variant_in_countrydir(path);
+    String var = GetDefaultVariantInCountryDirectory(path);
     path = path + "/" + var + ".cg.flitevox";
 
-    mLanguage = flang;
-    mCountry = fcountry;
-    mVariant = var;
-  } else if (languageSupport == ANDROID_TTS_LANG_AVAILABLE) {
-    LOGW("ClustergenVoice::setLanguage: %s",
+    language_ = flang;
+    country_ = fcountry;
+    variant_ = var;
+  } else if (language_support == ANDROID_TTS_LANG_AVAILABLE) {
+    LOGW("ClustergenVoice::SetLanguage: %s",
          "Exact voice not found. Only Language available.");
     path = path + "/cg/" + flang;
-    String country = get_default_country_in_languagedir(path);
+    String country = GetDefaultCountryInLanguageDirectory(path);
     path = path + "/" + country;
-    String var = get_default_variant_in_countrydir(path);
+    String var = GetDefaultVariantInCountryDirectory(path);
     path = path + "/" + var + ".cg.flitevox";
-    mLanguage = flang;
-    mCountry = country;
-    mVariant = var;
+    language_ = flang;
+    country_ = country;
+    variant_ = var;
   } else {
-    LOGE("ClustergenVoice::setLanguage: Voice not available.");
+    LOGE("ClustergenVoice::SetLanguage: Voice not available.");
     return ANDROID_TTS_FAILURE;
   }
 
   // Try to load the flite voice given the voxdata file
 
   // new since fLite 1.5.6
-  mFliteVoice = flite_voice_load(path.c_str());
+  flite_voice_ = flite_voice_load(path.c_str());
 
-  if (mFliteVoice == NULL) {
-    LOGE("ClustergenVoice::setLanguage: %s",
+  if (flite_voice_ == NULL) {
+    LOGE("ClustergenVoice::SetLanguage: %s",
          "Could not set language. File found but could not be loaded");
     return ANDROID_TTS_FAILURE;
   } else {
-    LOGE("ClustergenVoice::setLanguage: Voice Loaded in Flite");
+    LOGE("ClustergenVoice::SetLanguage: Voice Loaded in Flite");
   }
-  mLanguage = flang;
-  mCountry = fcountry;
-  mVariant = fvar;
+  language_ = flang;
+  country_ = fcountry;
+  variant_ = fvar;
 
   // Print out voice information from the meta-data.
   const char* lang, *country, *gender, *age, *build_date, *desc;
 
-  lang = flite_get_param_string(mFliteVoice->features, "language", "");
-  country = flite_get_param_string(mFliteVoice->features, "country", "");
-  gender = flite_get_param_string(mFliteVoice->features, "gender", "");
-  age = flite_get_param_string(mFliteVoice->features, "age", "");
-  build_date = flite_get_param_string(mFliteVoice->features, "build_date", "");
-  desc = flite_get_param_string(mFliteVoice->features, "desc", "");
+  lang = flite_get_param_string(flite_voice_->features, "language", "");
+  country = flite_get_param_string(flite_voice_->features, "country", "");
+  gender = flite_get_param_string(flite_voice_->features, "gender", "");
+  age = flite_get_param_string(flite_voice_->features, "age", "");
+  build_date = flite_get_param_string(flite_voice_->features, "build_date", "");
+  desc = flite_get_param_string(flite_voice_->features, "desc", "");
 
   LOGV("      Clustergen voice: Voice Language: %s", lang);
   LOGV("      Clustergen voice: Speaker Country: %s", country);
@@ -352,40 +354,40 @@ android_tts_result_t ClustergenVoice::setLanguage(String flang,
   return ANDROID_TTS_SUCCESS;
 }
 
-Voices::Voices(int fmaxCount, VoiceRegistrationMode fregistrationMode) {
+Voices::Voices(int max_count, VoiceRegistrationMode registration_mode) {
   LOGI("Voices being loaded. Maximum Linked voices: %d. Registration mode: %d",
-       fmaxCount, fregistrationMode);
-  mRMode = fregistrationMode;
-  mCurrentVoice = NULL;
-  mVoiceList = new LinkedVoice*[fmaxCount];
-  mMaxCount = fmaxCount;
-  for (int i = 0; i < mMaxCount; i++)
-    mVoiceList[i]=NULL;
-  mCurrentCount = 0;
+       max_count, registration_mode);
+  voice_registration_mode_ = registration_mode;
+  current_voice_ = NULL;
+  voice_list_ = new LinkedVoice*[max_count];
+  max_voice_count_ = max_count;
+  for (int i = 0; i < max_voice_count_; i++)
+    voice_list_[i]=NULL;
+  current_voice_count_ = 0;
 }
 
 Voices::~Voices() {
   LOGI("Voices::~Voices Deleting voice list");
-  if (mVoiceList != NULL) {
-    for (int i = 0; i < mCurrentCount; i++)
-      if (mVoiceList[i] != NULL)
-        delete mVoiceList[i];  // Delete the individual voices
-    delete[] mVoiceList;
-    mVoiceList = NULL;
+  if (voice_list_ != NULL) {
+    for (int i = 0; i < current_voice_count_; i++)
+      if (voice_list_[i] != NULL)
+        delete voice_list_[i];  // Delete the individual voices
+    delete[] voice_list_;
+    voice_list_ = NULL;
   }
   // clustergen voice will be destroyed automatically.
   LOGI("Voices::~Voices voice list deleted");
 }
 
-Voice* Voices::getCurrentVoice() {
-  return mCurrentVoice;
+Voice* Voices::GetCurrentVoice() {
+  return current_voice_;
 }
 
-void Voices::addLinkedVoice(String flang, String fcountry, String fvar,
+void Voices::AddLinkedVoice(String flang, String fcountry, String fvar,
                             t_voice_register_function freg,
                             t_voice_unregister_function funreg) {
-  LOGI("Voices::addLinkedVoice adding %s", fvar.c_str());
-  if (mCurrentCount == mMaxCount) {
+  LOGI("Voices::AddLinkedVoice adding %s", fvar.c_str());
+  if (current_voice_count_ == max_voice_count_) {
     LOGE("Could not add linked voice %s_%s_%s. Too many voices",
          flang.c_str(), fcountry.c_str(), fvar.c_str());
     return;
@@ -396,139 +398,147 @@ void Voices::addLinkedVoice(String flang, String fcountry, String fvar,
   /* We must register this voice if the registration mode
      so dictates.
   */
-  if (mRMode == ALL_VOICES_REGISTERED)
-    v->registerVoice();
+  if (voice_registration_mode_ == ALL_VOICES_REGISTERED)
+    v->RegisterVoice();
 
-  mVoiceList[mCurrentCount] = v;
-  mCurrentCount++;
+  voice_list_[current_voice_count_] = v;
+  current_voice_count_++;
 }
 
-void Voices::setDefaultVoice() {
-  if (mCurrentVoice != NULL)
-    if (mRMode == ONLY_ONE_VOICE_REGISTERED) {
-      mCurrentVoice->unregisterVoice();
-      mCurrentVoice = NULL;
+void Voices::SetDefaultVoice() {
+  if (current_voice_ != NULL)
+    if (voice_registration_mode_ == ONLY_ONE_VOICE_REGISTERED) {
+      current_voice_->UnregisterVoice();
+      current_voice_ = NULL;
     }
 
   // Try to load CMU_US_RMS. If it doesn't exist,
   // then pick the first linked voice, whichever it is.
 
-  android_tts_result_t result = mCGVoice.setLanguage("eng", "USA", "male,rms");
+  android_tts_result_t result = clustergen_voice_.SetLanguage("eng",
+                                                              "USA",
+                                                              "male,rms");
   if (result == ANDROID_TTS_SUCCESS) {
-    mCurrentVoice = &mCGVoice;
+    current_voice_ = &clustergen_voice_;
     return;
   }
 
-  for (int i = 0; i < mCurrentCount; i++) {
-    if (mVoiceList[i] != NULL) {
-      if (mRMode == ONLY_ONE_VOICE_REGISTERED)
-        mVoiceList[i]->registerVoice();
-      mCurrentVoice = mVoiceList[i];
+  for (int i = 0; i < current_voice_count_; i++) {
+    if (voice_list_[i] != NULL) {
+      if (voice_registration_mode_ == ONLY_ONE_VOICE_REGISTERED)
+        voice_list_[i]->RegisterVoice();
+      current_voice_ = voice_list_[i];
       return;
     }
   }
 }
 
-android_tts_support_result_t Voices::isLocaleAvailable(String flang,
+android_tts_support_result_t Voices::IsLocaleAvailable(String flang,
                                                        String fcountry,
                                                        String fvar) {
-  LOGI("Voices::isLocaleAvailable");
+  LOGI("Voices::IsLocaleAvailable");
 
   // First loop over the linked-in voices to see the locale match.
-  android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
-  android_tts_support_result_t currentSupport;
+  android_tts_support_result_t
+      language_support = ANDROID_TTS_LANG_NOT_SUPPORTED;
 
-  for (int i = 0; i < mCurrentCount; i++)  {
-    if (mVoiceList[i] == NULL) continue;
-    currentSupport = mVoiceList[i]->getLocaleSupport(flang, fcountry, fvar);
-    if (currentSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
+  android_tts_support_result_t current_support;
+
+  for (int i = 0; i < current_voice_count_; i++)  {
+    if (voice_list_[i] == NULL) continue;
+    current_support = voice_list_[i]->GetLocaleSupport(flang, fcountry, fvar);
+    if (current_support == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
       // We found a match, no need to loop any more.
       return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
     } else {
-      if (languageSupport < currentSupport)
+      if (language_support < current_support)
         // we found a better support than we previously knew
-        languageSupport = currentSupport;
+        language_support = current_support;
     }
   }
 
   // We need to also look through the cg voices to see if better
   // support available there.
 
-  currentSupport = mCGVoice.getLocaleSupport(flang, fcountry, fvar);
-  if (languageSupport < currentSupport)
+  current_support = clustergen_voice_.GetLocaleSupport(flang, fcountry, fvar);
+  if (language_support < current_support)
     // we found a better support than we previously knew
-    languageSupport = currentSupport;
-  return languageSupport;
+    language_support = current_support;
+  return language_support;
 }
 
-Voice* Voices::getVoiceForLocale(String flang,
+Voice* Voices::GetVoiceForLocale(String flang,
                                  String fcountry, String fvar) {
-  LOGI("Voices::getVoiceForLocale: language=%s country=%s variant=%s",
+  LOGI("Voices::GetVoiceForLocale: language=%s country=%s variant=%s",
        flang.c_str(), fcountry.c_str(), fvar.c_str());
 
   /* Check that the voice we currently have set doesn't already
      provide what is requested.
   */
-  if ((mCurrentVoice != NULL)
-      && (mCurrentVoice->isSameLocaleAs(flang, fcountry, fvar))) {
-    LOGW("Voices::getVoiceForLocale: %s",
+  if ((current_voice_ != NULL)
+      && (current_voice_->IsSameLocaleAs(flang, fcountry, fvar))) {
+    LOGW("Voices::GetVoiceForLocale: %s",
          "Requested voice is already loaded. Doing nothing.");
-    return mCurrentVoice;
+    return current_voice_;
   }
 
   /* If registration mode dictatas that only one voice can be set, 
      this is the right time to unregister currently loaded voice.
   */
-  if ((mCurrentVoice != NULL) && (mRMode == ONLY_ONE_VOICE_REGISTERED)) {
-    LOGI("Voices::getVoiceForLocale: %s",
+  if ((current_voice_ != NULL)
+      && (voice_registration_mode_ == ONLY_ONE_VOICE_REGISTERED)) {
+    LOGI("Voices::GetVoiceForLocale: %s",
          "Request for new voice. Unregistering current voice");
-    mCurrentVoice->unregisterVoice();
+    current_voice_->UnregisterVoice();
   }
-  mCurrentVoice = NULL;
+  current_voice_ = NULL;
 
   Voice* newVoice = NULL;
-  android_tts_support_result_t languageSupport = ANDROID_TTS_LANG_NOT_SUPPORTED;
-  android_tts_support_result_t currentSupport;
+  android_tts_support_result_t
+      language_support = ANDROID_TTS_LANG_NOT_SUPPORTED;
+
+  android_tts_support_result_t current_support;
 
   /* First loop over the linked-in voices to gather best available voice. */
 
-  for (int i = 0; i < mCurrentCount; i++) {
-    if (mVoiceList[i] == NULL) continue;
-    currentSupport = mVoiceList[i]->getLocaleSupport(flang, fcountry, fvar);
-    if (languageSupport < currentSupport) {
+  for (int i = 0; i < current_voice_count_; i++) {
+    if (voice_list_[i] == NULL) continue;
+    current_support = voice_list_[i]->GetLocaleSupport(flang, fcountry, fvar);
+    if (language_support < current_support) {
       // We found a better support for language than we previously had.
-      newVoice = mVoiceList[i];
-      languageSupport = currentSupport;
+      newVoice = voice_list_[i];
+      language_support = current_support;
     }
-    if (languageSupport == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
+    if (language_support == ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE)
       break;  // No point in continuing search if best support is found.
   }
-  LOGD("Voices::getVoiceForLocale: Linked voice support: %d.", languageSupport);
+  LOGD("Voices::GetVoiceForLocale: Linked voice support: %d.",
+       language_support);
 
-  if (languageSupport < ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
-    LOGD("Voices::getVoiceForLocale: %s",
+  if (language_support < ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE) {
+    LOGD("Voices::GetVoiceForLocale: %s",
          "Exact linked voice not found. Trying cg voices.");
 
     /* Since we didn't find an exact match, 
      * we should now search in the clustergen voices. */
-    currentSupport = mCGVoice.getLocaleSupport(flang, fcountry, fvar);
-    if (languageSupport <= currentSupport) {
+    current_support = clustergen_voice_.GetLocaleSupport(flang, fcountry, fvar);
+    if (language_support <= current_support) {
       /* Clustergen has equal or better support. */
-      LOGV("Voices::getVoiceForLocale: %s",
+      LOGV("Voices::GetVoiceForLocale: %s",
            "Clustergen voice has better support than linked voices.");
 
       android_tts_result_t result;
-      result = mCGVoice.setLanguage(flang, fcountry, fvar);
+      result = clustergen_voice_.SetLanguage(flang, fcountry, fvar);
       if (result == ANDROID_TTS_SUCCESS) {
-        LOGI("Voices::getVoiceForLocale: %s",
+        LOGI("Voices::GetVoiceForLocale: %s",
              "CG voice was found and set correctly.");
-        mCurrentVoice = &mCGVoice;
-        return mCurrentVoice;
+        current_voice_ = &clustergen_voice_;
+        return current_voice_;
       } else {
-        LOGE("Voices::getVoiceForLocale: CG voice could not be used. %s",
+        LOGE("Voices::GetVoiceForLocale: CG voice could not be used. %s",
              "NO VOICE SET. Synthesis is NOT possible.");
-        mCurrentVoice = NULL;  // Requested voice not available!
-        return mCurrentVoice;
+        current_voice_ = NULL;  // Requested voice not available!
+        return current_voice_;
       }
     } else {
       /* Clustergen doesn't have better support. Go for whatever was
@@ -539,15 +549,15 @@ Voice* Voices::getVoiceForLocale(String flang,
 
   if (newVoice != NULL) {
     // Something was found in the linked voices.
-    mCurrentVoice = newVoice;
-    if (mRMode == ONLY_ONE_VOICE_REGISTERED)
-      (reinterpret_cast<LinkedVoice*>(mCurrentVoice))->registerVoice();
-    return mCurrentVoice;
+    current_voice_ = newVoice;
+    if (voice_registration_mode_ == ONLY_ONE_VOICE_REGISTERED)
+      (reinterpret_cast<LinkedVoice*>(current_voice_))->RegisterVoice();
+    return current_voice_;
   } else {
-    LOGE("Voices::getVoiceForLocale: %s",
+    LOGE("Voices::GetVoiceForLocale: %s",
          "No voice could be used. Synthesis is NOT possible.");
-    mCurrentVoice = NULL;
-    return mCurrentVoice;
+    current_voice_ = NULL;
+    return current_voice_;
   }
 }
 }

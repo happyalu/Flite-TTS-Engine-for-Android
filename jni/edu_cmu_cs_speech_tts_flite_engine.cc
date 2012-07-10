@@ -178,13 +178,13 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       LOGE("TTSEngine::init Could not load voice list");
       return ANDROID_TTS_FAILURE;
     }
-  currentVoice = loadedVoices->getCurrentVoice();
+  currentVoice = loadedVoices->GetCurrentVoice();
   if(currentVoice == NULL)
     {
       LOGE("TTSEngine::init Voice list error");
       return ANDROID_TTS_FAILURE;
     }
-  if (currentVoice->getFliteVoice() == NULL) {
+  if (currentVoice->GetFliteVoice() == NULL) {
     return ANDROID_TTS_FAILURE;
   }
   ttsAbort = 0;
@@ -219,21 +219,21 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     LOGI("TtsEngine::setLanguage: lang=%s, country=%s, variant=%s", lang, country, variant);
 
     // Request the voice to voice-manager
-    currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
+    currentVoice = loadedVoices->GetVoiceForLocale(lang, country, variant);
     if(currentVoice == NULL)
       {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
 	return ANDROID_TTS_FAILURE;
       }
     // Request the voice to voice-manager
-    currentVoice = loadedVoices->getVoiceForLocale(lang, country, variant);
+    currentVoice = loadedVoices->GetVoiceForLocale(lang, country, variant);
     if(currentVoice == NULL)
       {
 	LOGE("TtsEngine::setLanguage : Could not set voice");
 	return ANDROID_TTS_FAILURE;
       }
 
-    if(currentVoice->getFliteVoice() == NULL)
+    if(currentVoice->GetFliteVoice() == NULL)
       return ANDROID_TTS_FAILURE;
     else
       return ANDROID_TTS_SUCCESS;
@@ -279,7 +279,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	  }
       }
 
-    return loadedVoices->isLocaleAvailable(lang, country, variant);
+    return loadedVoices->IsLocaleAvailable(lang, country, variant);
   }
 
   // Provide information about the currently set language.
@@ -289,9 +289,9 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     if(currentVoice == NULL)
       return ANDROID_TTS_FAILURE;
 
-    strcpy(language, currentVoice->getLanguage());
-    strcpy(country, currentVoice->getCountry());
-    strcpy(variant, currentVoice->getVariant());
+    strcpy(language, currentVoice->GetLanguage());
+    strcpy(country, currentVoice->GetCountry());
+    strcpy(variant, currentVoice->GetVariant());
     return ANDROID_TTS_SUCCESS;
   }
 
@@ -306,7 +306,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
         LOGE("Voices not loaded?");
         return ANDROID_TTS_FAILURE;
       }
-    flite_voice = currentVoice->getFliteVoice();
+    flite_voice = currentVoice->GetFliteVoice();
     if(flite_voice == NULL)
       {
         LOGE("Voice not available");
@@ -362,7 +362,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
         LOGE("Voices not loaded?");
         return ANDROID_TTS_FAILURE;
       }
-    flite_voice = currentVoice->getFliteVoice();
+    flite_voice = currentVoice->GetFliteVoice();
     if(flite_voice == NULL)
       {
 	LOGE("Voice not available");
@@ -511,7 +511,7 @@ float getBenchmark() {
     return -1;
   }
 
-  flite_voice = currentVoice->getFliteVoice();
+  flite_voice = currentVoice->GetFliteVoice();
   if(flite_voice == NULL)
   {
     LOGE("Voice not available");
