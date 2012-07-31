@@ -55,13 +55,14 @@ import android.util.Log;
 public class CheckVoiceData extends Activity {
 	private final static String LOG_TAG = "Flite_Java_" + CheckVoiceData.class.getSimpleName();
 	private final static String FLITE_DATA_PATH = Voice.getDataStorageBasePath();
+	public final static String VOICE_LIST_FILE = FLITE_DATA_PATH+"cg/voices-20120731.list";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		int result = TextToSpeech.Engine.CHECK_VOICE_DATA_PASS;
 		Intent returnData = new Intent();
-		returnData.putExtra(TextToSpeech.Engine.EXTRA_VOICE_DATA_ROOT_DIRECTORY, 
+		returnData.putExtra(TextToSpeech.Engine.EXTRA_VOICE_DATA_ROOT_DIRECTORY,
 				FLITE_DATA_PATH);
 
 		ArrayList<String> available = new ArrayList<String>();
@@ -76,7 +77,7 @@ public class CheckVoiceData extends Activity {
 			// Create the directory.
 			Log.e(LOG_TAG, "Flite data directory missing. Trying to create it.");
 			boolean success = false;
-			
+
 			try {
 				Log.e(LOG_TAG,FLITE_DATA_PATH);
 				success = new File(FLITE_DATA_PATH+"cg").mkdirs();
@@ -95,34 +96,24 @@ public class CheckVoiceData extends Activity {
 			}
 		}
 
-		/* Connect to CMU TTS server and get the list of voices available, 
-		 * if we don't already have a file. 
+		/* Connect to CMU TTS server and get the list of voices available,
+		 * if we don't already have a file.
 		 */
-		
-		String voiceListFile = FLITE_DATA_PATH+"cg/voices.list";
-		if(!Utility.pathExists(voiceListFile)) {
+
+		if(!Utility.pathExists(VOICE_LIST_FILE)) {
 			Log.e(LOG_TAG, "Voice list file doesn't exist. Try getting it from server.");
-			String voiceListURL = Voice.getDownloadURLBasePath() + "voices.list?q=1";
 
-			FileDownloader fdload = new FileDownloader();
-			fdload.saveUrlAsFile(voiceListURL, voiceListFile);
-			while(!fdload.finished) {}
-			boolean savedVoiceList = fdload.success;
-
-			if(!savedVoiceList)
-				Log.w(LOG_TAG,"Could not update voice list from server");
-			else
-				Log.w(LOG_TAG,"Successfully updated voice list from server");
+			DownloadVoiceList(null);
 		}
 
 		/* At this point, we MUST have a voices.list file. If this file is not there,
 		 * possibly because Internet connection was not available, we must create a dummy
-		 * 
+		 *
 		 */
-		if(!Utility.pathExists(FLITE_DATA_PATH+"cg/voices.list")) {
+		if(!Utility.pathExists(VOICE_LIST_FILE)) {
 			try {
 				Log.w(LOG_TAG, "Voice list not found, creating dummy list.");
-				BufferedWriter out = new BufferedWriter(new FileWriter(FLITE_DATA_PATH+"cg/voices.list"));
+				BufferedWriter out = new BufferedWriter(new FileWriter(VOICE_LIST_FILE));
 				out.write("eng-USA-male_rms");
 				out.close();
 			} catch (IOException e) {
@@ -158,26 +149,46 @@ public class CheckVoiceData extends Activity {
 		finish();
 	}
 
+	public static void DownloadVoiceList(Runnable callback) {
+		// Download the voice list and call back to notify of update
+		String voiceListURL = Voice.getDownloadURLBasePath() + "voices.list?q=1";
+
+		FileDownloader fdload = new FileDownloader();
+		fdload.saveUrlAsFile(voiceListURL, VOICE_LIST_FILE);
+		while(!fdload.finished) {}
+		boolean savedVoiceList = fdload.success;
+
+		if(!savedVoiceList)
+			Log.w(LOG_TAG,"Could not update voice list from server");
+		else
+			Log.w(LOG_TAG,"Successfully updated voice list from server");
+
+		if (callback != null) {
+			callback.run();
+		}
+
+	}
+
 	public static ArrayList<Voice> getVoices() {
 		ArrayList<String> voiceList = null;
 		try {
-			voiceList = Utility.readLines(FLITE_DATA_PATH+"cg/voices.list");
+			voiceList = Utility.readLines(VOICE_LIST_FILE);
 		} catch (IOException e) {
 			// Ignore exception, since we will return empty anyway.
 		}
 		if (voiceList == null) {
 			voiceList = new ArrayList<String>();
 		}
-		
+
 		ArrayList<Voice> voices = new ArrayList<Voice>();
-		
+
 		for(String strLine:voiceList) {
 			Voice vox = new Voice(strLine);
-			if (!vox.isValid()) 
+			if (!vox.isValid())
 				continue;
 			voices.add(vox);
 		}
-		
+
 		return voices;
 	}
-}  
+}
