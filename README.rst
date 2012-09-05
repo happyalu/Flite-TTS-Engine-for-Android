@@ -55,7 +55,7 @@ In order to build this application, you need the following:
   download on the Flite website. A version can be downloaded from
   http://tts.speech.cs.cmu.edu/aup/distr/android/flite-1.5.6-current.tar.bz2
 
-- Android NDK Release 8
+- Android NDK Release 8b
 - Android SDK Release 20
 
 Application Build Steps
