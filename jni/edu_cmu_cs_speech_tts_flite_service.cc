@@ -261,6 +261,7 @@ extern "C" {
                                      jni_data->audio_buffer_size_,
                                      jni_data);
 
+    env->ReleaseStringUTFChars(text, c_text);
     env->DeleteGlobalRef(jni_data->tts_ref_);
     return result;
   }
