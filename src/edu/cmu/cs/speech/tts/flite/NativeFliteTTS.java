@@ -75,6 +75,10 @@ public class NativeFliteTTS {
         attemptInit();
         return nativeSetLanguage(language, country, variant);
     }
+
+    public int getSampleRate() {
+      return nativeGetSampleRate();
+    }
 	
 	public void synthesize(String text) {
         nativeSynthesize(text);
@@ -119,6 +123,7 @@ public class NativeFliteTTS {
     private native final boolean nativeDestroy();
 	private native final int nativeIsLanguageAvailable(String language, String country, String variant);
 	private native final boolean nativeSetLanguage(String language, String country, String variant);
+    private native final int nativeGetSampleRate();
 	private native final boolean nativeSynthesize(String text);
 	private native final boolean nativeStop();
 	

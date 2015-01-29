@@ -215,6 +215,8 @@ struct android_tts_engine_funcs_t {
              char *country,
              char *variant);
 
+  const int (*getSampleRate) (void *engine);
+
     // Notifies the engine what audio parameters should be used for the synthesis.
     // This is meant to be used as a hint, the engine implementation will set the output values
     // to those of the synthesis format, based on a given hint.

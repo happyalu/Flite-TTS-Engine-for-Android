@@ -135,7 +135,9 @@ public class FliteTtsService extends TextToSpeechService {
 			return;
 		}
 		mCallback = callback;
-		mCallback.start(16000, AudioFormat.ENCODING_PCM_16BIT, 1);
+        Integer rate = new Integer(mEngine.getSampleRate());
+        Log.e(LOG_TAG, rate.toString());
+		mCallback.start(mEngine.getSampleRate(), AudioFormat.ENCODING_PCM_16BIT, 1);
 		mEngine.synthesize(text);		
 	}
 

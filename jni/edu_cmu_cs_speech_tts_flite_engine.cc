@@ -113,7 +113,7 @@ void setVoiceList() {
     int num_channels = w->num_channels;
     int sample_rate = w->sample_rate;
 
-    //    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
+    // LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d. Rate: %d.", start, size, last, num_channels, sample_rate );
 
     if(ttsSynthDoneCBPointer != NULL)
       {
@@ -253,7 +253,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
          (strcmp(variant, "is_flite_available") == 0) ) {
       return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
     }
-    
+
     // The hack to set streaming:
     // If language and country are not set, then variant will be
     // interpreted as being "stream" or "nostream" to set the appropriate parameters.
@@ -294,6 +294,20 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     strcpy(variant, currentVoice->GetVariant());
     return ANDROID_TTS_SUCCESS;
   }
+
+  // Provide Sample rate of current Voice
+  const int getSampleRate(void* engine)
+  {
+    int rate = 16000;
+    if (currentVoice != NULL)
+    {
+      rate = currentVoice->GetSampleRate();
+    }
+
+    LOGV("getSampleRate: %d", rate);
+    return rate;
+  }
+
 
   // Setting Audio Format is not supported by Flite Engine.
   android_tts_result_t setAudioFormat(void* engine, android_tts_audio_format_t* encoding, uint32_t* rate,
@@ -488,6 +502,7 @@ android_tts_engine_t *getTtsEngine()
   functable->loadLanguage = &loadLanguage;
   functable->setLanguage = &setLanguage;
   functable->getLanguage = &getLanguage;
+  functable->getSampleRate = &getSampleRate;
   functable->setAudioFormat = &setAudioFormat;
   functable->setProperty = &setProperty;
   functable->getProperty = &getProperty;

@@ -292,6 +292,18 @@ extern "C" {
     return (jfloat) getBenchmark();
   }
 
+  JNIEXPORT jint
+  JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetSampleRate(
+      JNIEnv *env, jobject object) {
+    DEBUG_LOG_FUNCTION;
+    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
+    android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
+
+    LOGV("HERE: %d", flite_engine->getSampleRate(flite_engine));
+    return (jint) flite_engine->getSampleRate(flite_engine);
+  }
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

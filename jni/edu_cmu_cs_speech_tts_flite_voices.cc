@@ -55,6 +55,10 @@ const char* Voice::GetVariant() {
   return variant_.c_str();
 }
 
+const int Voice::GetSampleRate() {
+  return flite_get_param_int(flite_voice_->features, "sample_rate", 16000);
+}
+
 cst_voice* Voice::GetFliteVoice() {
   return flite_voice_;
 }

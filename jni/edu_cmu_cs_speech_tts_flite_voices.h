@@ -78,6 +78,7 @@ namespace FliteEngine {
     const char* GetLanguage();
     const char* GetCountry();
     const char* GetVariant();
+    const int GetSampleRate();
 
     // Returns the currently set flite voice.
     // WARNING: This will *NOT* register the voice.
