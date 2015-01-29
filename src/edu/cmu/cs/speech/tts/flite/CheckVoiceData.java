@@ -55,7 +55,7 @@ import android.util.Log;
 public class CheckVoiceData extends Activity {
 	private final static String LOG_TAG = "Flite_Java_" + CheckVoiceData.class.getSimpleName();
 	private final static String FLITE_DATA_PATH = Voice.getDataStorageBasePath();
-	public final static String VOICE_LIST_FILE = FLITE_DATA_PATH+"cg/voices-20120731.list";
+	public final static String VOICE_LIST_FILE = FLITE_DATA_PATH+"cg/voices-20150129.list";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

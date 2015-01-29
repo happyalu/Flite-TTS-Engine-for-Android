@@ -54,7 +54,7 @@ public class Voice {
 	private final static String LOG_TAG = "Flite_Java_" + Voice.class.getSimpleName();
 	private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
 			+ "/flite-data/";
-	private final static String VOICE_BASE_URL = "http://festvox.org/flite/voices/cg/voxdata-v1.5.4/";
+	private final static String VOICE_BASE_URL = "http://festvox.org/flite/voices/cg/voxdata-v2.0.0/";
 
 	private String mVoiceName;
 	private String mVoiceMD5;

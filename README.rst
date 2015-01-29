@@ -16,7 +16,7 @@ similar devices. For more information about Flite, visit www.cmuflite.org
 This application wraps the Flite engine so that it can be installed as
 an application on Android devices. This app gets installed as a TTS
 library, thereby allowing other applications to make use of Flite for
-synthesis. 
+synthesis.
 
 Installing this Application
 ===========================
@@ -45,25 +45,24 @@ package name of the engine to use.
 Building this App from Source
 =============================
 
-Instructions here are for development on Linux. 
+Instructions here are for development on Linux.
 
 Requirements
 ------------
 In order to build this application, you need the following:
 
-- Flite 1.5.6 or later. This latest release is not available for
-  download on the Flite website. A version can be downloaded from
-  http://tts.speech.cs.cmu.edu/aup/distr/android/flite-1.5.6-current.tar.bz2
+- Flite 2.0.0 or later.  A version can be downloaded from
+  http://www.festvox.org/flite/packed/flite-2.0/flite-2.0.0-release.tar.bz2
 
-- Android NDK Release 8b
-- Android SDK Release 20
+- Android NDK Release 10d
+- Android SDK Release 24.0.2
 
 Application Build Steps
 -----------------------
 
 *Export necessary environment variables* ::
 
-    export FLITEDIR=/path/to/flite-1.5.6
+    export FLITEDIR=/path/to/flite-2.0.0
     export FLITE_APP_DIR=/path/to/this/application
     export ANDROID_NDK=/path/to/android/ndk
     export ANDROID_SDK=/path/to/android/sdk

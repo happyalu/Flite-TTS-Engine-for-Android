@@ -66,6 +66,9 @@ FliteEngine::Voice* currentVoice;
 extern "C" void usenglish_init(cst_voice *v);
 extern "C" cst_lexicon *cmulex_init(void);
 
+extern "C" void cmu_indic_lang_init(cst_voice *v);
+extern "C" cst_lexicon *cmu_indic_lex_init(void);
+
 void setVoiceList() {
     if(loadedVoices != NULL)
       {
@@ -74,6 +77,7 @@ void setVoiceList() {
       }
     LOGI("Starting setVoiceList");
     flite_add_lang("eng",usenglish_init,cmulex_init);
+    flite_add_lang("cmu_indic_lang",cmu_indic_lang_init,cmu_indic_lex_init);
     loadedVoices = new FliteEngine::Voices(0, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
     if(loadedVoices == NULL)
       {
@@ -328,7 +332,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       }
 
     *rate = feat_int(flite_voice->features,"sample_rate");
-    LOGI("TtsEngine::setAudioFormat: setting Rate to %d",rate);
+    LOGI("TtsEngine::setAudioFormat: setting Rate to %u", (unsigned int) rate);
 
     *encoding = ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT;
     *channels = 1;

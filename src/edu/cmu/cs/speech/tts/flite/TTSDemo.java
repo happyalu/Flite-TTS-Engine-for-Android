@@ -142,6 +142,9 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 		setContentView(R.layout.activity_tts_demo);
 		mStrings.add("Click an item here to synthesize, or enter your own text below!");
 		mStrings.add("A whole joy was reaping, but they've gone south, go fetch azure mike!");
+		mStrings.add("हिन्दी संवैधानिक रूप से भारत की प्रथम राजभाषा और भारत की सबसे अधिक बोली और समझी जाने वाली भाषा है।");
+		mStrings.add("महाराष्ट्र आणि गोवा ह्या राज्यांची मराठी ही अधिकृत राजभाषा आहे.");
+		mStrings.add("Hello World, नमस्कार, வணக்கம், నమస్కారం");
 
 		mAdapter = new InputHistoryAdapter(this, R.layout.list_tts_history, mStrings);
 

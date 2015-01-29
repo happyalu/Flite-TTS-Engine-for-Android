@@ -74,6 +74,8 @@ LOCAL_C_INCLUDES := $(FLITEDIR)/include
 LOCAL_LDLIBS:= -llog \
 	$(FLITE_LIB_DIR)/libflite_cmulex.a \
 	$(FLITE_LIB_DIR)/libflite_usenglish.a \
+	$(FLITE_LIB_DIR)/libflite_cmu_indic_lex.a \
+	$(FLITE_LIB_DIR)/libflite_cmu_indic_lang.a \
 	$(FLITE_LIB_DIR)/libflite.a \
 
 ifeq ("$(APP_OPTIM)", "debug")
