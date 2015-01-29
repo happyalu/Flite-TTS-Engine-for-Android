@@ -66,7 +66,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListener, OnInitListener {
-	private final static String LOG_TAG = "Flite_Java_" + TTSDemo.class.getSimpleName();	
+	private final static String LOG_TAG = "Flite_Java_" + TTSDemo.class.getSimpleName();
 
 	private EditText mUserText;
 	private ImageButton mSendButton;
@@ -93,21 +93,21 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		if (mVoices.isEmpty()) {
 			// We can't demo anything if there are no voices installed.
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);  
-			builder.setMessage("Flite voices not installed. Please add voices in order to run the demo");  
-			builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {  
-				@Override  
-				public void onClick(DialogInterface dialog, int which) {  
-					dialog.cancel(); 
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Flite voices not installed. Please add voices in order to run the demo");
+			builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
 					finish();
-				}  
-			});  
-			AlertDialog alert = builder.create();  
-			alert.show();  
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
 		}
 		else {
 			// Initialize the TTS
-			if (android.os.Build.VERSION.SDK_INT >= 
+			if (android.os.Build.VERSION.SDK_INT >=
 					android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 				mTts = new TextToSpeech(this, this, "edu.cmu.cs.speech.tts.flite");
 			}
@@ -118,7 +118,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		}
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -164,7 +164,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 	private void sendText() {
 		String text = mUserText.getText().toString();
-		if (text.isEmpty()) 
+		if (text.isEmpty())
 			return;
 		mAdapter.add(text);
 		mUserText.setText(null);
@@ -197,7 +197,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 	private class InputHistoryAdapter extends ArrayAdapter<String> {
 		private ArrayList<String> items;
 
-		public InputHistoryAdapter(Context context, 
+		public InputHistoryAdapter(Context context,
 				int textViewResourceId, ArrayList<String> items) {
 			super(context, textViewResourceId, items);
 			this.items = items;
@@ -211,7 +211,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			}
 			String s = items.get(position);
 			TextView tt = (TextView) convertView.findViewById(R.id.inputText);
-			tt.setText(s);	
+			tt.setText(s);
 			return convertView;
 		}
 
@@ -225,40 +225,40 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			success = false;
 		}
 
-		if (success && 
-				(android.os.Build.VERSION.SDK_INT >= 
+		if (success &&
+				(android.os.Build.VERSION.SDK_INT >=
 				android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)) {
 			status = mTts.setEngineByPackageName("edu.cmu.cs.speech.tts.flite");
-		}	
-		
+		}
+
 		if (status == TextToSpeech.ERROR) {
 			success = false;
 		}
 
 		// REALLY check that it is flite engine that has been initialized
-		// This is done using a hack, for now, since for API < 14 
+		// This is done using a hack, for now, since for API < 14
 		// there seems to be no way to check which engine is being used.
-		
+
 		if (mTts.isLanguageAvailable(new Locale("eng", "USA", "is_flite_available"))
 				!= TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE) {
 			success = false;
 		}
-		
+
 		if (!success) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);  
-			builder.setMessage("Flite TTS Engine could not be initialized. Check that Flite is enabled on your phone!. In some cases, you may have to select flite as the default engine.");  
-			builder.setNegativeButton("Open TTS Settings", new DialogInterface.OnClickListener() {  
-				@Override  
-				public void onClick(DialogInterface dialog, int which) {  
-					dialog.cancel(); 
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Flite TTS Engine could not be initialized. Check that Flite is enabled on your phone!. In some cases, you may have to select flite as the default engine.");
+			builder.setNegativeButton("Open TTS Settings", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
 					Intent intent = new Intent();
 					intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.TextToSpeechSettings"));
 			        startActivity(intent);
 					finish();
-				}  
-			});  
-			AlertDialog alert = builder.create();  
-			alert.show();  
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
 		}
 		else {
 			buildUI();
@@ -269,6 +269,6 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 	public void onListItemClick(ListView parent, View view, int position, long id) {
 		String text = (String) parent.getItemAtPosition(position);
 		sayText(text);
-		
+
 	}
 }
