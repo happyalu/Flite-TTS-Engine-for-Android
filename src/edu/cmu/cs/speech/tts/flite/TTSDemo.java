@@ -72,9 +72,12 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 	private ImageButton mSendButton;
 	private ArrayAdapter<String> mAdapter;
 	private ArrayAdapter<String> mVoiceAdapter;
+    private ArrayAdapter<String> mRateAdapter;
 	private ArrayList<Voice> mVoices;
 	private ArrayList<String> mStrings = new ArrayList<String>();
+    private ArrayList<String> mRates = new ArrayList<String>();
 	private Spinner mVoiceSpinner;
+    private Spinner mRateSpinner;
 	private TextToSpeech mTts;
 	private int mSelectedVoice;
 
@@ -150,11 +153,25 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		setListAdapter(mAdapter);
 
+		mRates.add("Very Slow");
+		mRates.add("Slow");
+		mRates.add("Normal");
+		mRates.add("Fast");
+		mRates.add("Very Fast");
+
+		mRateAdapter = new ArrayAdapter<String>(this,
+							android.R.layout.simple_spinner_dropdown_item,
+							mRates);
+
+
 		mUserText = (EditText) findViewById(R.id.userText);
 		mSendButton = (ImageButton) findViewById(R.id.sendButton);
-		mVoiceSpinner = (Spinner) findViewById(R.id.voice);
 
+		mVoiceSpinner = (Spinner) findViewById(R.id.voice);
 		mVoiceSpinner.setAdapter(mVoiceAdapter);
+
+		mRateSpinner = (Spinner) findViewById(R.id.speechrate);
+		mRateSpinner.setAdapter(mRateAdapter);
 
 		mUserText.setOnClickListener(this);
 		mSendButton.setOnClickListener(this);
@@ -182,6 +199,10 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			Voice v = mVoices.get(currentVoiceID);
 			mTts.setLanguage(v.getLocale());
 		}
+
+		int currentRate = mRateSpinner.getSelectedItemPosition();
+		mTts.setSpeechRate((float)(currentRate + 1)/3);
+
 		mTts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 
