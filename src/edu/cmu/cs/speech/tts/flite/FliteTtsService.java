@@ -54,9 +54,9 @@ import android.util.Log;
 
 @TargetApi(14)
 public class FliteTtsService extends TextToSpeechService {
-	private final static String LOG_TAG = "Flite_Java_" + FliteTtsService.class.getSimpleName();	
+	private final static String LOG_TAG = "Flite_Java_" + FliteTtsService.class.getSimpleName();
 	private NativeFliteTTS mEngine;
-	
+
 	private static final String DEFAULT_LANGUAGE = "eng";
 	private static final String DEFAULT_COUNTRY = "USA";
 	private static final String DEFAULT_VARIANT = "male,rms";
@@ -72,7 +72,7 @@ public class FliteTtsService extends TextToSpeechService {
 		initializeFliteEngine();
 
 		// This calls onIsLanguageAvailable() and must run after Initialization
-		super.onCreate();		
+		super.onCreate();
 	}
 
 	private void initializeFliteEngine() {
@@ -118,6 +118,7 @@ public class FliteTtsService extends TextToSpeechService {
 		String country = request.getCountry();
 		String variant = request.getVariant();
 		String text = request.getText();
+		Integer speechrate = request.getSpeechRate();
 
 		boolean result = true;
 
@@ -134,11 +135,14 @@ public class FliteTtsService extends TextToSpeechService {
 			Log.e(LOG_TAG, "Could not set language for synthesis");
 			return;
 		}
+
+		mEngine.setSpeechRate(speechrate);
+		
 		mCallback = callback;
         Integer rate = new Integer(mEngine.getSampleRate());
         Log.e(LOG_TAG, rate.toString());
 		mCallback.start(mEngine.getSampleRate(), AudioFormat.ENCODING_PCM_16BIT, 1);
-		mEngine.synthesize(text);		
+		mEngine.synthesize(text);
 	}
 
 	private final NativeFliteTTS.SynthReadyCallback mSynthCallback = new SynthReadyCallback() {
@@ -165,7 +169,7 @@ public class FliteTtsService extends TextToSpeechService {
             mCallback.done();
         }
 	};
-	
+
 	/**
 	 * Listens for language update broadcasts and initializes the flite engine.
 	 */

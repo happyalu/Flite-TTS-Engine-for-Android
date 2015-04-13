@@ -43,8 +43,8 @@ import android.os.Environment;
 import android.util.Log;
 
 public class NativeFliteTTS {
-	private final static String LOG_TAG = "Flite_Java_" + NativeFliteTTS.class.getSimpleName();	
-	
+	private final static String LOG_TAG = "Flite_Java_" + NativeFliteTTS.class.getSimpleName();
+
 	static {
 		System.loadLibrary("ttsflite");
 		nativeClassInit();
@@ -54,23 +54,23 @@ public class NativeFliteTTS {
 	private final SynthReadyCallback mCallback;
     private final String mDatapath;
     private boolean mInitialized = false;
-    
+
 	public NativeFliteTTS(Context context, SynthReadyCallback callback) {
 		mDatapath = new File(Voice.getDataStorageBasePath()).getParent();
 		mContext = context;
 		mCallback = callback;
-		attemptInit();		
+		attemptInit();
 	}
-	
+
 	@Override
     protected void finalize() {
         nativeDestroy();
     }
-	
+
 	public int isLanguageAvailable(String language, String country,	String variant) {
 		return nativeIsLanguageAvailable(language, country, variant);
 	}
-	
+
 	public boolean setLanguage(String language, String country, String variant) {
         attemptInit();
         return nativeSetLanguage(language, country, variant);
@@ -79,19 +79,23 @@ public class NativeFliteTTS {
     public int getSampleRate() {
       return nativeGetSampleRate();
     }
-	
-	public void synthesize(String text) {
+
+    public boolean setSpeechRate(int rate) {
+	return nativeSetSpeechRate(rate);
+    }
+
+    public void synthesize(String text) {
         nativeSynthesize(text);
     }
 
     public void stop() {
         nativeStop();
     }
-    
+
     public float getNativeBenchmark() {
 		return nativeGetBenchmark();
 	}
-    
+
     private void nativeSynthCallback(byte[] audioData) {
         if (mCallback == null)
             return;
@@ -102,19 +106,19 @@ public class NativeFliteTTS {
             mCallback.onSynthDataReady(audioData);
         }
     }
-    
+
     private void attemptInit() {
         if (mInitialized) {
             return;
         }
-        
+
         if (!nativeCreate(mDatapath)) {
 			Log.e(LOG_TAG, "Failed to initialize flite library");
 			return;
 		}
 		Log.i(LOG_TAG, "Initialized Flite");
 		mInitialized = true;
-        
+
     }
 
     private int mNativeData;
@@ -123,10 +127,11 @@ public class NativeFliteTTS {
     private native final boolean nativeDestroy();
 	private native final int nativeIsLanguageAvailable(String language, String country, String variant);
 	private native final boolean nativeSetLanguage(String language, String country, String variant);
+    private native final boolean nativeSetSpeechRate(int rate);
     private native final int nativeGetSampleRate();
 	private native final boolean nativeSynthesize(String text);
 	private native final boolean nativeStop();
-	
+
 	private native final float nativeGetBenchmark();
 
 
@@ -136,5 +141,5 @@ public class NativeFliteTTS {
         void onSynthDataComplete();
     }
 
-	
+
 }

@@ -243,6 +243,37 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       return ANDROID_TTS_SUCCESS;
   }
 
+  android_tts_result_t setSpeechRate(void* engine, int rate) {
+    LOGI("TtsEngine::setSpeechRate : Attempting to set rate %d", rate);
+    cst_voice* flite_voice = currentVoice->GetFliteVoice();
+    if(flite_voice == NULL)
+      {
+        LOGE("Voice not available to set rate");
+        return ANDROID_TTS_FAILURE;
+      }
+
+    // Set duration_stretch parameter on the voice. Rate is given as a percentage.
+    if (rate == 0) {
+      LOGE("Attempt to set speaking rate of zero. Discarding request.");
+      return ANDROID_TTS_FAILURE;
+    }
+
+    // Each voice has its own default duration stretch parameter. We should not discard this original value.
+    if (!feat_present(flite_voice->features, "orig_duration_stretch")) {
+      LOGW("Don't have original stretch");
+
+      float orig_dur_stretch = get_param_float(flite_voice->features, "duration_stretch", 1.0);
+      LOGW("Original duration stretch: %1.3f", orig_dur_stretch);
+
+      feat_set_float(flite_voice->features, "orig_duration_stretch", orig_dur_stretch);
+    }
+
+    // Now update the actual duration stretch as a percentage of the default value.
+    feat_set_float(flite_voice->features, "duration_stretch",
+    		   feat_float(flite_voice->features, "orig_duration_stretch") * 100.0 / rate);
+    return ANDROID_TTS_SUCCESS;
+  }
+
   // Language availability check does not use the "streaming" byte, as in setLanguage
   // Also, check is made against the entire locale.
   android_tts_support_result_t isLanguageAvailable(void* engine, const char *lang, const char *country,
@@ -507,6 +538,7 @@ android_tts_engine_t *getTtsEngine()
   functable->setLanguage = &setLanguage;
   functable->getLanguage = &getLanguage;
   functable->getSampleRate = &getSampleRate;
+  functable->setSpeechRate = &setSpeechRate;
   functable->setAudioFormat = &setAudioFormat;
   functable->setProperty = &setProperty;
   functable->getProperty = &getProperty;
