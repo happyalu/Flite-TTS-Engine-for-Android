@@ -245,6 +245,12 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 
   android_tts_result_t setSpeechRate(void* engine, int rate) {
     LOGI("TtsEngine::setSpeechRate : Attempting to set rate %d", rate);
+    if(currentVoice == NULL)
+      {
+	LOGE("TtsEngine::setSpeechRate : Could not set rate");
+	return ANDROID_TTS_FAILURE;
+      }
+    
     cst_voice* flite_voice = currentVoice->GetFliteVoice();
     if(flite_voice == NULL)
       {
