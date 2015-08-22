@@ -134,7 +134,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 		ArrayList<String> voiceNames = new ArrayList<String>();
 
 		for (Voice vox: mVoices) {
-			voiceNames.add(vox.getVariant());
+		    voiceNames.add(vox.getDisplayName()); // vox.getVariant());
 		}
 
 		mVoiceAdapter = new ArrayAdapter<String>(this,
@@ -172,6 +172,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		mRateSpinner = (Spinner) findViewById(R.id.speechrate);
 		mRateSpinner.setAdapter(mRateAdapter);
+		mRateSpinner.setSelection(2);
 
 		mUserText.setOnClickListener(this);
 		mSendButton.setOnClickListener(this);
