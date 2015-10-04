@@ -134,11 +134,24 @@ void setVoiceList() {
 		  paddingWave[i] = 0;
 		LOGE("Utterance too short. Adding padding to the output to workaround audio rendering bug.");
 		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
-		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length, ANDROID_TTS_SYNTH_DONE);
+		// Changed by Alok to still be pending, because in the new
+		// streaming mode (via tokenstream), utterance end isn't the end
+		// of TTS. There could be more utterances
+
+		/*
+		  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length,
+				      ANDROID_TTS_SYNTH_DONE);
+		*/
+		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length,
+				      ANDROID_TTS_SYNTH_PENDING);
 		delete[] paddingWave;
 	      }
 	    else
-	      ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_DONE);
+	      // See comment above on why this has been changed.
+	      /* ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize,
+		 ANDROID_TTS_SYNTH_DONE); */
+	      ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize,
+				    ANDROID_TTS_SYNTH_PENDING);
 	  }
 	else
 	  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
@@ -250,7 +263,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 	LOGE("TtsEngine::setSpeechRate : Could not set rate");
 	return ANDROID_TTS_FAILURE;
       }
-    
+
     cst_voice* flite_voice = currentVoice->GetFliteVoice();
     if(flite_voice == NULL)
       {
@@ -468,16 +481,51 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 
 	  }
 
-	cst_utterance *u = flite_synth_text(text,flite_voice);
-	delete_utterance(u);
+	cst_tokenstream *ts;
+
+	char* padded_text = reinterpret_cast<char*>(malloc(strlen(text) + 2));
+	snprintf(padded_text, strlen(text)+2, "%s\n\n", text);
+
+	if ((ts=ts_open_string(padded_text,
+			       get_param_string(flite_voice->features, "text_whitespace", cst_ts_default_whitespacesymbols),
+			       get_param_string(flite_voice->features, "text_singlecharsymbols", cst_ts_default_singlecharsymbols),
+			       get_param_string(flite_voice->features, "text_prepunctuation", cst_ts_default_prepunctuationsymbols),
+			       get_param_string(flite_voice->features, "text_postpunctuation", cst_ts_default_postpunctuationsymbols)))==NULL) {
+
+	  LOGE("Unable to open tokenstream");
+	  free(padded_text);
+	  return ANDROID_TTS_FAILURE;
+	}
+
+	free(padded_text);
+	flite_ts_to_speech(ts,
+			   flite_voice,
+			   "stream");
+
+	  //	cst_utterance *u = flite_synth_text(text,flite_voice);
+	  //	delete_utterance(u);
 
         feat_remove(flite_voice->features, "streaming_info");
+
+	// // Mark synthesis as done
+	// size_t padding_length = 8000;
+	// int8_t* paddingWave = new int8_t[padding_length]; // Half a second
+	// for(int i=0;i<(int)padding_length;i++)
+	//   paddingWave[i] = 0;
+	// LOGE("Finalizing TTS");
+	// uint32_t rate = getSampleRate(NULL);
+	// ttsSynthDoneCBPointer(&asi->userdata, rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, 1, &paddingWave, &padding_length,
+	// 		      ANDROID_TTS_SYNTH_DONE);
+
 
         LOGI("Done flite synthesis.");
         return ANDROID_TTS_SUCCESS;
       }
     else
       {
+	// AUP: This doesn't do the right thing: It will treat all the text as one utterance.
+	// The streaming code goes through tokenstreams, therefore does the right thing.
+
 	LOGI("TtsEngine::synthesizeText: streaming is DISABLED");
         LOGI("Starting Synthesis");
 
