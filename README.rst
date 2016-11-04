@@ -24,7 +24,7 @@ Installing this Application
 This app is not yet available on the Google Play Store, but you can
 generate an apk file by building this source code, or download an APK
 file from the Github page and install it on your device. Devices
-running Android versions 2.2 (Froyo) or later are supported.
+running Android versions 2.3 (Gingerbread) or later are supported.
 
 After installing this application, you will have to:
 
@@ -42,8 +42,32 @@ If you are developing an application and would like to use Flite for
 speech synthesis, you can specify "edu.cmu.cs.speech.tts.flite" as the
 package name of the engine to use.
 
-Building this App from Source
-=============================
+Building this App from Source using the Build script
+====================================================
+
+Instructions here are for development on Linux.
+
+Requirements
+------------
+In order to build this application, you need the following:
+
+- Android NDK Release 10e or newer
+- Android SDK with the SDK Platform package for Android 5.1.1 (API 22)
+
+Application Build Steps
+-----------------------
+
+*Export necessary environment variables* ::
+
+    export ANDROID_NDK=/path/to/android/ndk
+    export ANDROID_SDK=/path/to/android/sdk 
+
+*Wait for the build script do download, verify, extract, patch and build the Flite Engine and App.*
+
+The final ``apk`` will be placed in ``bin/FliteEngine-debug.apk``.
+
+Building this App from Source manually
+======================================
 
 Instructions here are for development on Linux.
 
