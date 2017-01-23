@@ -61,7 +61,7 @@ Application Build Steps
 
     export ANDROID_NDK=/path/to/android/ndk
     export ANDROID_SDK=/path/to/android/sdk
-    bash./build.sh
+    bash ./build.sh
 
 *Wait for the build script do download, verify, extract, patch and build the Flite Engine and App.*
 
