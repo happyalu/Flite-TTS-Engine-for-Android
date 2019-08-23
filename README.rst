@@ -57,7 +57,7 @@ modify the 10e ndk
 #Step 1: download ndk
 #Step 2: extract archive
 #Step 3: browse to to .../android-ndk-r10e/toolchains. 
-#Step 4: or every folder ending with 4.8 (make a link with same name but end it 
+#Step 4: for every folder ending with 4.8 (make a link with same name but end it 
 #   with 4.6 instead). This can be done via CLI: 
 
 ln -s arm-linux-androideabi-4.8 arm-linux-androideabi-4.6
@@ -91,7 +91,7 @@ install missing ant & JDK8
 -----------------------------
 sudo apt-get install openjdk-8-jdk ant
 export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
-#you'll need redo export if you open a new tab or terminal.
+#you'll need redo the export step if you open a new tab or terminal window to do the build.
 
 Building this App from Source using the Build script
 ====================================================
