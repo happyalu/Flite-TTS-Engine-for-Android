@@ -45,22 +45,27 @@ package name of the engine to use.
 Build this App from Source in 2019
 ==================================
 
-To build this App from source in 2019, you will have to modify the 10e ndk, the sdk, install an older version of JDK (8 will do) and install ant.
+To build this App from source in 2019, you will have to modify the 10e ndk, 
+the sdk, install an older version of JDK (8 will do) and install ant.
 
 ---------------------
 modify the 10e ndk
 ---------------------
-#the Android build script are tailored for ndk r10d but that ndk is no longer available. You'll have to modify the r10e ndk so that it would work with them. 
+#the Android build script are tailored for ndk r10d but that ndk is no longer 
+#available. You'll have to modify the r10e ndk so that it would work with them. 
+
 #Step 1: download ndk
 #Step 2: extract archive
 #Step 3: browse to to .../android-ndk-r10e/toolchains. 
-#Step 4: or every folder ending with 4.8 (make a link with same name but end it with 4.6 instead). This can be done via CLI: 
+#Step 4: or every folder ending with 4.8 (make a link with same name but end it 
+#   with 4.6 instead). This can be done via CLI: 
 
 ln -s arm-linux-androideabi-4.8 arm-linux-androideabi-4.6
 ln -s mipsel-linux-android-4.8 mipsel-linux-android-4.6
 ln -s x86-4.8 x86-4.6
 
-#Step 6: for each of the linked folders, link linux_x86_64 to linux_x86 or you can execute this command from the toolchains folder (from the same folder as above):
+#Step 6: for each of the linked folders, link linux_x86_64 to linux_x86 or you can 
+#   execute this command from the toolchains folder (from the same folder as above):
 
 ln -s $PWD/arm-linux-androideabi-4.8/prebuilt/linux-x86_64 $PWD/arm-linux-androideabi-4.6/prebuilt/linux-x86
 ln -s $PWD/mipsel-linux-android-4.8/prebuilt/linux-x86_64 $PWD/mipsel-linux-android-4.6/prebuilt/linux-x86
@@ -69,7 +74,8 @@ ln -s $PWD/x86-4.8/prebuilt/linux-x86_64 $PWD/x86-4.6/prebuilt/linux-x86
 -------------------
 modify your sdk
 -------------------
-#Sdk/tools/ant/build.xml is no longer included in your Sdk/tools folder, you'll need to download it seperately 
+#Sdk/tools/ant/build.xml is no longer included in your Sdk/tools folder, you'll need to
+#   download it seperately 
 
 #Step 1: 
 wget https://dl.google.com/android/repository/tools_r24.0.2-linux.zip
