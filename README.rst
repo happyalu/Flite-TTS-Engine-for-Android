@@ -42,6 +42,57 @@ If you are developing an application and would like to use Flite for
 speech synthesis, you can specify "edu.cmu.cs.speech.tts.flite" as the
 package name of the engine to use.
 
+Build this App from Source in 2019
+==================================
+
+To build this App from source in 2019, you will have to modify the 10e ndk, 
+the sdk, install an older version of JDK (8 will do) and install ant.
+
+---------------------
+modify the 10e ndk
+---------------------
+#the Android build script are tailored for ndk r10d but that ndk is no longer 
+#available. You'll have to modify the r10e ndk so that it would work with them. 
+
+#Step 1: download ndk
+#Step 2: extract archive
+#Step 3: browse to to .../android-ndk-r10e/toolchains. 
+#Step 4: for every folder ending with 4.8 (make a link with same name but end it 
+#   with 4.6 instead). This can be done via CLI: 
+
+ln -s arm-linux-androideabi-4.8 arm-linux-androideabi-4.6
+ln -s mipsel-linux-android-4.8 mipsel-linux-android-4.6
+ln -s x86-4.8 x86-4.6
+
+#Step 6: for each of the linked folders, link linux_x86_64 to linux_x86 or you can 
+#   execute this command from the toolchains folder (from the same folder as above):
+
+ln -s $PWD/arm-linux-androideabi-4.8/prebuilt/linux-x86_64 $PWD/arm-linux-androideabi-4.6/prebuilt/linux-x86
+ln -s $PWD/mipsel-linux-android-4.8/prebuilt/linux-x86_64 $PWD/mipsel-linux-android-4.6/prebuilt/linux-x86
+ln -s $PWD/x86-4.8/prebuilt/linux-x86_64 $PWD/x86-4.6/prebuilt/linux-x86
+
+-------------------
+modify your sdk
+-------------------
+#Sdk/tools/ant/build.xml is no longer included in your Sdk/tools folder, you'll need to
+#   download it seperately 
+
+#Step 1: 
+wget https://dl.google.com/android/repository/tools_r24.0.2-linux.zip
+
+#Step 2: backup unmessed with SDK/tools so that you may restore it after all of this:
+cp ~/Android/Sdk/tools ~/Android/Sdk/tools.bak
+
+#Step 3: extract downloaded zip and copy the tools folder within it:
+cp ./tools_r24.0.2-linux/tools ~/Android/Sdk/tools
+
+-----------------------------
+install missing ant & JDK8
+-----------------------------
+sudo apt-get install openjdk-8-jdk ant
+export PATH=/usr/lib/jvm/java-8-openjdk-amd64/bin:$PATH
+#you'll need redo the export step if you open a new tab or terminal window to do the build.
+
 Building this App from Source using the Build script
 ====================================================
 
@@ -52,7 +103,7 @@ Requirements
 In order to build this application, you need the following:
 
 - Android NDK Release 10e or newer
-- Android SDK with the SDK Platform package for Android 5.1.1 (API 22)
+- Android SDK with the SDK Platform 24.0.2
 
 Application Build Steps
 -----------------------
@@ -79,7 +130,7 @@ In order to build this application, you need the following:
 - Flite 2.0.0 or later.  A version can be downloaded from
   http://www.festvox.org/flite/packed/flite-2.0/flite-2.0.0-release.tar.bz2
 
-- Android NDK Release 10d
+- Android NDK Release 10e
 - Android SDK Release 24.0.2
 
 Application Build Steps
@@ -109,3 +160,8 @@ Application Build Steps
     cd $FLITE_APP_DIR
     ant debug
 
+*Build installable application package (release)* ::
+
+    keytool -genkey -v -keystore flite.keystore -alias flite_release -keyalg RSA -keysize 2048 -validity 10000
+    ant release
+    jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore flite.keystore bin/FliteEngine-release-unsigned.apk flite_release
