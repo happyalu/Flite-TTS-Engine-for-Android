@@ -66,6 +66,9 @@ FliteEngine::Voice* currentVoice;
 extern "C" void usenglish_init(cst_voice *v);
 extern "C" cst_lexicon *cmulex_init(void);
 
+extern "C" void cmu_indic_lang_init(cst_voice *v);
+extern "C" cst_lexicon *cmu_indic_lex_init(void);
+
 void setVoiceList() {
     if(loadedVoices != NULL)
       {
@@ -74,6 +77,7 @@ void setVoiceList() {
       }
     LOGI("Starting setVoiceList");
     flite_add_lang("eng",usenglish_init,cmulex_init);
+    flite_add_lang("cmu_indic_lang",cmu_indic_lang_init,cmu_indic_lex_init);
     loadedVoices = new FliteEngine::Voices(0, FliteEngine::ONLY_ONE_VOICE_REGISTERED); // Max number of voices is the first argument.
     if(loadedVoices == NULL)
       {
@@ -113,7 +117,7 @@ void setVoiceList() {
     int num_channels = w->num_channels;
     int sample_rate = w->sample_rate;
 
-    //    LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d.", start, size, last, num_channels );
+    // LOGV("flite callback received! Start: %d. Size: %d. Last: %d. Channels: %d. Rate: %d.", start, size, last, num_channels, sample_rate );
 
     if(ttsSynthDoneCBPointer != NULL)
       {
@@ -130,11 +134,24 @@ void setVoiceList() {
 		  paddingWave[i] = 0;
 		LOGE("Utterance too short. Adding padding to the output to workaround audio rendering bug.");
 		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
-		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length, ANDROID_TTS_SYNTH_DONE);
+		// Changed by Alok to still be pending, because in the new
+		// streaming mode (via tokenstream), utterance end isn't the end
+		// of TTS. There could be more utterances
+
+		/*
+		  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length,
+				      ANDROID_TTS_SYNTH_DONE);
+		*/
+		ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &paddingWave, &padding_length,
+				      ANDROID_TTS_SYNTH_PENDING);
 		delete[] paddingWave;
 	      }
 	    else
-	      ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_DONE);
+	      // See comment above on why this has been changed.
+	      /* ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize,
+		 ANDROID_TTS_SYNTH_DONE); */
+	      ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize,
+				    ANDROID_TTS_SYNTH_PENDING);
 	  }
 	else
 	  ttsSynthDoneCBPointer(&asi->userdata, sample_rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, num_channels, &castedWave, &bufferSize, ANDROID_TTS_SYNTH_PENDING);
@@ -239,6 +256,43 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       return ANDROID_TTS_SUCCESS;
   }
 
+  android_tts_result_t setSpeechRate(void* engine, int rate) {
+    LOGI("TtsEngine::setSpeechRate : Attempting to set rate %d", rate);
+    if(currentVoice == NULL)
+      {
+	LOGE("TtsEngine::setSpeechRate : Could not set rate");
+	return ANDROID_TTS_FAILURE;
+      }
+
+    cst_voice* flite_voice = currentVoice->GetFliteVoice();
+    if(flite_voice == NULL)
+      {
+        LOGE("Voice not available to set rate");
+        return ANDROID_TTS_FAILURE;
+      }
+
+    // Set duration_stretch parameter on the voice. Rate is given as a percentage.
+    if (rate == 0) {
+      LOGE("Attempt to set speaking rate of zero. Discarding request.");
+      return ANDROID_TTS_FAILURE;
+    }
+
+    // Each voice has its own default duration stretch parameter. We should not discard this original value.
+    if (!feat_present(flite_voice->features, "orig_duration_stretch")) {
+      LOGW("Don't have original stretch");
+
+      float orig_dur_stretch = get_param_float(flite_voice->features, "duration_stretch", 1.0);
+      LOGW("Original duration stretch: %1.3f", orig_dur_stretch);
+
+      feat_set_float(flite_voice->features, "orig_duration_stretch", orig_dur_stretch);
+    }
+
+    // Now update the actual duration stretch as a percentage of the default value.
+    feat_set_float(flite_voice->features, "duration_stretch",
+    		   feat_float(flite_voice->features, "orig_duration_stretch") * 100.0 / rate);
+    return ANDROID_TTS_SUCCESS;
+  }
+
   // Language availability check does not use the "streaming" byte, as in setLanguage
   // Also, check is made against the entire locale.
   android_tts_support_result_t isLanguageAvailable(void* engine, const char *lang, const char *country,
@@ -253,7 +307,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
          (strcmp(variant, "is_flite_available") == 0) ) {
       return ANDROID_TTS_LANG_COUNTRY_VAR_AVAILABLE;
     }
-    
+
     // The hack to set streaming:
     // If language and country are not set, then variant will be
     // interpreted as being "stream" or "nostream" to set the appropriate parameters.
@@ -295,6 +349,20 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
     return ANDROID_TTS_SUCCESS;
   }
 
+  // Provide Sample rate of current Voice
+  const int getSampleRate(void* engine)
+  {
+    int rate = 16000;
+    if (currentVoice != NULL)
+    {
+      rate = currentVoice->GetSampleRate();
+    }
+
+    LOGV("getSampleRate: %d", rate);
+    return rate;
+  }
+
+
   // Setting Audio Format is not supported by Flite Engine.
   android_tts_result_t setAudioFormat(void* engine, android_tts_audio_format_t* encoding, uint32_t* rate,
                                        int* channels)
@@ -314,7 +382,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       }
 
     *rate = feat_int(flite_voice->features,"sample_rate");
-    LOGI("TtsEngine::setAudioFormat: setting Rate to %d",rate);
+    LOGI("TtsEngine::setAudioFormat: setting Rate to %u", (unsigned int) rate);
 
     *encoding = ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT;
     *channels = 1;
@@ -413,16 +481,51 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
 
 	  }
 
-	cst_utterance *u = flite_synth_text(text,flite_voice);
-	delete_utterance(u);
+	cst_tokenstream *ts;
+
+	char* padded_text = reinterpret_cast<char*>(malloc(strlen(text) + 2));
+	snprintf(padded_text, strlen(text)+2, "%s\n\n", text);
+
+	if ((ts=ts_open_string(padded_text,
+			       get_param_string(flite_voice->features, "text_whitespace", cst_ts_default_whitespacesymbols),
+			       get_param_string(flite_voice->features, "text_singlecharsymbols", cst_ts_default_singlecharsymbols),
+			       get_param_string(flite_voice->features, "text_prepunctuation", cst_ts_default_prepunctuationsymbols),
+			       get_param_string(flite_voice->features, "text_postpunctuation", cst_ts_default_postpunctuationsymbols)))==NULL) {
+
+	  LOGE("Unable to open tokenstream");
+	  free(padded_text);
+	  return ANDROID_TTS_FAILURE;
+	}
+
+	free(padded_text);
+	flite_ts_to_speech(ts,
+			   flite_voice,
+			   "stream");
+
+	  //	cst_utterance *u = flite_synth_text(text,flite_voice);
+	  //	delete_utterance(u);
 
         feat_remove(flite_voice->features, "streaming_info");
+
+	// // Mark synthesis as done
+	// size_t padding_length = 8000;
+	// int8_t* paddingWave = new int8_t[padding_length]; // Half a second
+	// for(int i=0;i<(int)padding_length;i++)
+	//   paddingWave[i] = 0;
+	// LOGE("Finalizing TTS");
+	// uint32_t rate = getSampleRate(NULL);
+	// ttsSynthDoneCBPointer(&asi->userdata, rate, ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT, 1, &paddingWave, &padding_length,
+	// 		      ANDROID_TTS_SYNTH_DONE);
+
 
         LOGI("Done flite synthesis.");
         return ANDROID_TTS_SUCCESS;
       }
     else
       {
+	// AUP: This doesn't do the right thing: It will treat all the text as one utterance.
+	// The streaming code goes through tokenstreams, therefore does the right thing.
+
 	LOGI("TtsEngine::synthesizeText: streaming is DISABLED");
         LOGI("Starting Synthesis");
 
@@ -488,6 +591,8 @@ android_tts_engine_t *getTtsEngine()
   functable->loadLanguage = &loadLanguage;
   functable->setLanguage = &setLanguage;
   functable->getLanguage = &getLanguage;
+  functable->getSampleRate = &getSampleRate;
+  functable->setSpeechRate = &setSpeechRate;
   functable->setAudioFormat = &setAudioFormat;
   functable->setProperty = &setProperty;
   functable->getProperty = &getProperty;

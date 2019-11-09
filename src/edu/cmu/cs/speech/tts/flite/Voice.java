@@ -33,7 +33,7 @@
 /*             Author:  Alok Parlikar (aup@cs.cmu.edu)                   */
 /*               Date:  July 2012                                        */
 /*************************************************************************/
- 
+
 package edu.cmu.cs.speech.tts.flite;
 
 import java.io.File;
@@ -54,7 +54,7 @@ public class Voice {
 	private final static String LOG_TAG = "Flite_Java_" + Voice.class.getSimpleName();
 	private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
 			+ "/flite-data/";
-	private final static String VOICE_BASE_URL = "http://tts.speech.cs.cmu.edu/android/vox-flite-1.5.6/";
+	private final static String VOICE_BASE_URL = "http://festvox.org/flite/voices/cg/voxdata-v2.0.0/";
 
 	private String mVoiceName;
 	private String mVoiceMD5;
@@ -63,30 +63,30 @@ public class Voice {
 	private String mVoiceVariant;
 	private boolean mIsValidVoice;
 	private String mVoicePath;
-	private boolean mIsVoiceAvailable;	
-	
+	private boolean mIsVoiceAvailable;
+
 	/**
 	 * @return absolute path to the flite-data directory
 	 */
 	public static String getDataStorageBasePath() {
 		return FLITE_DATA_PATH;
 	}
-	
+
 	/**
 	 * @return base URL to download voices and other flite data
 	 */
 	public static String getDownloadURLBasePath() {
 		return VOICE_BASE_URL;
 	}
-	
+
 	/**
-	 * @param voiceInfoLine is the line that is found in "voices.list" file 
+	 * @param voiceInfoLine is the line that is found in "voices.list" file
 	 * as downloaded on the server and cached. This line has text in the format:
 	 * language-country-variant<TAB>MD5SUM
 	 */
 	Voice(String voiceInfoLine) {
 		boolean parseSuccessful = false;
-		
+
 		String[] voiceInfo = voiceInfoLine.split("\t");
 		if (voiceInfo.length != 2) {
 			Log.e(LOG_TAG, "Voice line could not be read: " + voiceInfoLine);
@@ -94,7 +94,7 @@ public class Voice {
 		else {
 			mVoiceName = voiceInfo[0];
 			mVoiceMD5 = voiceInfo[1];
-			
+
 			String[] voiceParams = mVoiceName.split("-");
 			if(voiceParams.length != 3) {
 				Log.e(LOG_TAG,"Incorrect voicename:" + mVoiceName);
@@ -104,32 +104,32 @@ public class Voice {
 				mVoiceCountry = voiceParams[1];
 				mVoiceVariant = voiceParams[2];
 				parseSuccessful = true;
-			}			
+			}
 		}
-		
+
 		if (parseSuccessful) {
 			mIsValidVoice = true;
-			mVoicePath = getDataStorageBasePath() + "cg/" + mVoiceLanguage + 
+			mVoicePath = getDataStorageBasePath() + "cg/" + mVoiceLanguage +
 					"/" + mVoiceCountry + "/" + mVoiceVariant + ".cg.flitevox";
 			checkVoiceAvailability();
 		}
 		else {
 			mIsValidVoice = false;
 		}
-		
+
 	}
-	
+
 	private void checkVoiceAvailability() {
 		Log.v(LOG_TAG, "Checking for Voice Available: " + mVoiceName);
 
 		mIsVoiceAvailable = false;
-		
+
 		// The file should exist, as well as the MD5 sum should match.
 		// Only then do we mark a voice as available.
-		// 
+		//
 		// We can attempt getting an MD5sum, and an IOException will
 		// tell us if the file didn't exist at all.
-		
+
 		MessageDigest md;
 		try {
 			md = MessageDigest.getInstance("MD5");
@@ -137,7 +137,7 @@ public class Voice {
 			Log.e(LOG_TAG, "MD5 could not be computed");
 			return;
 		}
-		
+
 		FileInputStream fis;
 		try {
 			fis = new FileInputStream(mVoicePath);
@@ -146,7 +146,7 @@ public class Voice {
 			Log.e(LOG_TAG, "Voice File not found: " + mVoicePath);
 			return;
 		}
-		
+
 		byte[] dataBytes = new byte[1024];
 		int nread = 0;
 		try {
@@ -164,31 +164,31 @@ public class Voice {
 				// Ignoring this exception.
 			}
 		}
-		
-		byte[] mdbytes = md.digest();	
-		
+
+		byte[] mdbytes = md.digest();
+
 		StringBuffer sb = new StringBuffer();
         for (int i = 0; i < mdbytes.length; i++) {
           sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
         }
-        
+
 		if (sb.toString().equals(mVoiceMD5)) {
 			mIsVoiceAvailable = true;
 			return;
-		}		
+		}
 		else {
 			Log.e(LOG_TAG,"Voice file found, but MD5 sum incorrect. Found" +
 					sb.toString() + ". Expected: " + mVoiceMD5);
 			return;
-		}		
+		}
 	}
-	
+
 	public boolean isValid() {
 		return mIsValidVoice;
 	}
-	
+
 	public boolean isAvailable() {
-		return mIsVoiceAvailable;			
+		return mIsVoiceAvailable;
 	}
 
 	public String getName() {
@@ -199,7 +199,7 @@ public class Voice {
 		Locale loc = new Locale(mVoiceLanguage, mVoiceCountry, mVoiceVariant);
 		String displayName = loc.getDisplayLanguage() +
 				"(" + loc.getDisplayCountry() + "," + loc.getVariant() + ")";
-		return displayName;		
+		return displayName;
 	}
 
 	public String getVariant() {
@@ -210,7 +210,7 @@ public class Voice {
 		Locale loc = new Locale(mVoiceLanguage, mVoiceCountry, mVoiceVariant);
 		String displayLanguage = loc.getDisplayLanguage() +
 				" (" + loc.getDisplayCountry() + ")";
-		
+
 		return displayLanguage;
 	}
 

@@ -76,7 +76,7 @@ public class DownloadVoiceData extends ListActivity {
 		mListAdapter = new VoiceListAdapter(this);
 		setListAdapter(mListAdapter);
 		mContext = this;
-	}	
+	}
 
 	@Override
 	public void onDestroy() {
@@ -89,32 +89,45 @@ public class DownloadVoiceData extends ListActivity {
 		super.onResume();
 		mListAdapter.refresh();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(R.string.voice_list_update);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Only works for a single menu option.
 		// User must have requested a refresh of the voice list.
-		
-		// Do a background transfer of the voices.list file
-		String url = Voice.getDownloadURLBasePath() + "voices.list";
-		DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-		request.setDescription("Downloading Flite TTS Voice List");
-		request.setTitle("Flite");
-		request.setDestinationUri(Uri.fromFile(new File(Voice.getDataStorageBasePath()+"cg/voices.list")));
 
-		DownloadManager manager = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
-		manager.enqueue(request);
+		Toast toast = Toast.makeText(mContext, "Downloading Voice List", Toast.LENGTH_SHORT);
+		toast.show();
+
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				CheckVoiceData.DownloadVoiceList(new Runnable() {
+					@Override
+					public void run() {
+						runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								mListAdapter.refresh();
+
+							}
+						});
+					}
+				});
+
+			}
+		};
+
+		thread.start();
 		return true;
-		
+
 	}
-
-
 
 	private class VoiceListAdapter extends BaseAdapter {
 
@@ -128,7 +141,7 @@ public class DownloadVoiceData extends ListActivity {
 
 			// Get Information about voices
 			mVoiceList = CheckVoiceData.getVoices();
-			
+
 			if (mVoiceList.isEmpty()) {
 				Intent intent = new Intent(mContext, CheckVoiceData.class);
 		        startActivity(intent);
@@ -236,9 +249,9 @@ public class DownloadVoiceData extends ListActivity {
 					}
 				}
 			});
-			
+
 			convertView.setOnClickListener(new View.OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					actionButton.performClick();

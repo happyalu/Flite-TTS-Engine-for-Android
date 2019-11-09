@@ -1,6 +1,8 @@
 bin/
 libs/
+flite/
 gen/
+obj/
 build.properties
 local.properties
 ant.properties

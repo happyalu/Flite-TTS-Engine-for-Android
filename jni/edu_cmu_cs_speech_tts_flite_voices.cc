@@ -55,6 +55,15 @@ const char* Voice::GetVariant() {
   return variant_.c_str();
 }
 
+const int Voice::GetSampleRate() {
+  int rate = 16000;
+  if (flite_voice_ != NULL) {
+    rate = flite_get_param_int(flite_voice_->features, "sample_rate", rate);
+  }
+
+  return rate;
+}
+
 cst_voice* Voice::GetFliteVoice() {
   return flite_voice_;
 }
@@ -482,7 +491,7 @@ Voice* Voices::GetVoiceForLocale(String flang,
     return current_voice_;
   }
 
-  /* If registration mode dictatas that only one voice can be set, 
+  /* If registration mode dictatas that only one voice can be set,
      this is the right time to unregister currently loaded voice.
   */
   if ((current_voice_ != NULL)
@@ -519,7 +528,7 @@ Voice* Voices::GetVoiceForLocale(String flang,
     LOGD("Voices::GetVoiceForLocale: %s",
          "Exact linked voice not found. Trying cg voices.");
 
-    /* Since we didn't find an exact match, 
+    /* Since we didn't find an exact match,
      * we should now search in the clustergen voices. */
     current_support = clustergen_voice_.GetLocaleSupport(flang, fcountry, fvar);
     if (language_support <= current_support) {

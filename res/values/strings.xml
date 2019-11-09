@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Flite TTS Engine</string>
     <string name="eng_sample">This is a sample English sentence for Flite synthesizer.</string>
+    <string name="indic_sample">हिंदी भारत की राष्ट्रभाषा है।  मराठी ही महाराष्ट्र राज्याची अधिकृत भाषा आहे.</string>
     <string name="flite_manager">Flite</string>
     <string name="flite_voice_manager">Flite TTS Voice Management</string>
     <string name="voice_list_update">Download Voice List</string>

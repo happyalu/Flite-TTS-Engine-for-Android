@@ -66,15 +66,18 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListener, OnInitListener {
-	private final static String LOG_TAG = "Flite_Java_" + TTSDemo.class.getSimpleName();	
+	private final static String LOG_TAG = "Flite_Java_" + TTSDemo.class.getSimpleName();
 
 	private EditText mUserText;
 	private ImageButton mSendButton;
 	private ArrayAdapter<String> mAdapter;
 	private ArrayAdapter<String> mVoiceAdapter;
+    private ArrayAdapter<String> mRateAdapter;
 	private ArrayList<Voice> mVoices;
 	private ArrayList<String> mStrings = new ArrayList<String>();
+    private ArrayList<String> mRates = new ArrayList<String>();
 	private Spinner mVoiceSpinner;
+    private Spinner mRateSpinner;
 	private TextToSpeech mTts;
 	private int mSelectedVoice;
 
@@ -93,21 +96,21 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		if (mVoices.isEmpty()) {
 			// We can't demo anything if there are no voices installed.
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);  
-			builder.setMessage("Flite voices not installed. Please add voices in order to run the demo");  
-			builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {  
-				@Override  
-				public void onClick(DialogInterface dialog, int which) {  
-					dialog.cancel(); 
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Flite voices not installed. Please add voices in order to run the demo");
+			builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
 					finish();
-				}  
-			});  
-			AlertDialog alert = builder.create();  
-			alert.show();  
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
 		}
 		else {
 			// Initialize the TTS
-			if (android.os.Build.VERSION.SDK_INT >= 
+			if (android.os.Build.VERSION.SDK_INT >=
 					android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 				mTts = new TextToSpeech(this, this, "edu.cmu.cs.speech.tts.flite");
 			}
@@ -118,7 +121,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 		}
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -131,7 +134,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 		ArrayList<String> voiceNames = new ArrayList<String>();
 
 		for (Voice vox: mVoices) {
-			voiceNames.add(vox.getVariant());
+		    voiceNames.add(vox.getDisplayName()); // vox.getVariant());
 		}
 
 		mVoiceAdapter = new ArrayAdapter<String>(this,
@@ -142,16 +145,34 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 		setContentView(R.layout.activity_tts_demo);
 		mStrings.add("Click an item here to synthesize, or enter your own text below!");
 		mStrings.add("A whole joy was reaping, but they've gone south, go fetch azure mike!");
+		mStrings.add("हिन्दी संवैधानिक रूप से भारत की प्रथम राजभाषा और भारत की सबसे अधिक बोली और समझी जाने वाली भाषा है।");
+		mStrings.add("महाराष्ट्र आणि गोवा ह्या राज्यांची मराठी ही अधिकृत राजभाषा आहे.");
+		mStrings.add("Hello World, नमस्कार, வணக்கம், నమస్కారం");
 
 		mAdapter = new InputHistoryAdapter(this, R.layout.list_tts_history, mStrings);
 
 		setListAdapter(mAdapter);
 
+		mRates.add("Very Slow");
+		mRates.add("Slow");
+		mRates.add("Normal");
+		mRates.add("Fast");
+		mRates.add("Very Fast");
+
+		mRateAdapter = new ArrayAdapter<String>(this,
+							android.R.layout.simple_spinner_dropdown_item,
+							mRates);
+
+
 		mUserText = (EditText) findViewById(R.id.userText);
 		mSendButton = (ImageButton) findViewById(R.id.sendButton);
-		mVoiceSpinner = (Spinner) findViewById(R.id.voice);
 
+		mVoiceSpinner = (Spinner) findViewById(R.id.voice);
 		mVoiceSpinner.setAdapter(mVoiceAdapter);
+
+		mRateSpinner = (Spinner) findViewById(R.id.speechrate);
+		mRateSpinner.setAdapter(mRateAdapter);
+		mRateSpinner.setSelection(2);
 
 		mUserText.setOnClickListener(this);
 		mSendButton.setOnClickListener(this);
@@ -164,7 +185,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 
 	private void sendText() {
 		String text = mUserText.getText().toString();
-		if (text.isEmpty()) 
+		if (text.isEmpty())
 			return;
 		mAdapter.add(text);
 		mUserText.setText(null);
@@ -179,6 +200,10 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			Voice v = mVoices.get(currentVoiceID);
 			mTts.setLanguage(v.getLocale());
 		}
+
+		int currentRate = mRateSpinner.getSelectedItemPosition();
+		mTts.setSpeechRate((float)(currentRate + 1)/3);
+
 		mTts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 
@@ -197,7 +222,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 	private class InputHistoryAdapter extends ArrayAdapter<String> {
 		private ArrayList<String> items;
 
-		public InputHistoryAdapter(Context context, 
+		public InputHistoryAdapter(Context context,
 				int textViewResourceId, ArrayList<String> items) {
 			super(context, textViewResourceId, items);
 			this.items = items;
@@ -211,7 +236,7 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			}
 			String s = items.get(position);
 			TextView tt = (TextView) convertView.findViewById(R.id.inputText);
-			tt.setText(s);	
+			tt.setText(s);
 			return convertView;
 		}
 
@@ -225,40 +250,40 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 			success = false;
 		}
 
-		if (success && 
-				(android.os.Build.VERSION.SDK_INT >= 
+		if (success &&
+				(android.os.Build.VERSION.SDK_INT >=
 				android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH)) {
 			status = mTts.setEngineByPackageName("edu.cmu.cs.speech.tts.flite");
-		}	
-		
+		}
+
 		if (status == TextToSpeech.ERROR) {
 			success = false;
 		}
 
 		// REALLY check that it is flite engine that has been initialized
-		// This is done using a hack, for now, since for API < 14 
+		// This is done using a hack, for now, since for API < 14
 		// there seems to be no way to check which engine is being used.
-		
+
 		if (mTts.isLanguageAvailable(new Locale("eng", "USA", "is_flite_available"))
 				!= TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE) {
 			success = false;
 		}
-		
+
 		if (!success) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);  
-			builder.setMessage("Flite TTS Engine could not be initialized. Check that Flite is enabled on your phone!. In some cases, you may have to select flite as the default engine.");  
-			builder.setNegativeButton("Open TTS Settings", new DialogInterface.OnClickListener() {  
-				@Override  
-				public void onClick(DialogInterface dialog, int which) {  
-					dialog.cancel(); 
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("Flite TTS Engine could not be initialized. Check that Flite is enabled on your phone!. In some cases, you may have to select flite as the default engine.");
+			builder.setNegativeButton("Open TTS Settings", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
 					Intent intent = new Intent();
 					intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.TextToSpeechSettings"));
 			        startActivity(intent);
 					finish();
-				}  
-			});  
-			AlertDialog alert = builder.create();  
-			alert.show();  
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
 		}
 		else {
 			buildUI();
@@ -269,6 +294,6 @@ public class TTSDemo extends ListActivity implements OnClickListener, OnKeyListe
 	public void onListItemClick(ListView parent, View view, int position, long id) {
 		String text = (String) parent.getItemAtPosition(position);
 		sayText(text);
-		
+
 	}
 }

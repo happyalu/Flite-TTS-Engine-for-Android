@@ -48,8 +48,8 @@ import java.util.Locale;
  * Returns the sample text string for the language requested
  */
 public class GetSampleText extends Activity {
-	private final static String LOG_TAG = "Flite_Java_" + GetSampleText.class.getSimpleName();	
-    
+	private final static String LOG_TAG = "Flite_Java_" + GetSampleText.class.getSimpleName();
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -57,20 +57,23 @@ public class GetSampleText extends Activity {
     final Locale locale = getLocaleFromIntent(getIntent());
 
     final String language = (locale == null) ? "eng" : locale.getISO3Language();
-        
+
     int result = TextToSpeech.LANG_AVAILABLE;
     Intent returnData = new Intent();
 
     if (language.equals("eng")) {
       returnData.putExtra("sampleText", getString(R.string.eng_sample));
       Log.v(LOG_TAG, "Returned SampleText: " + getString(R.string.eng_sample));
+    } else if ((language.equals("hin")) || (language.equals("mar"))) {
+	returnData.putExtra("sampleText", getString(R.string.indic_sample));
+	Log.v(LOG_TAG, "Returned SampleText: " + getString(R.string.indic_sample));
     } else {
       Log.v(LOG_TAG, "Unsupported Language: " + language);
       result = TextToSpeech.LANG_NOT_SUPPORTED;
       returnData.putExtra("sampleText", "");
     }
-	
-    setResult(result, returnData);	
+
+    setResult(result, returnData);
 
     finish();
   }
@@ -86,4 +89,4 @@ public class GetSampleText extends Activity {
 
     return Locale.getDefault();
   }
-}  
+}
