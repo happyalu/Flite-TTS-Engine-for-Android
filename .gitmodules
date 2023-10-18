@@ -1,0 +1,3 @@
+[submodule "flite"]
+	path = flite
+	url = https://github.com/aconnectedplanet/flite.git
