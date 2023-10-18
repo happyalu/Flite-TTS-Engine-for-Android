@@ -56,6 +56,7 @@ public class NativeFliteTTS {
     private boolean mInitialized = false;
 
 	public NativeFliteTTS(Context context, SynthReadyCallback callback) {
+        Voice.setDataStorageBasePath(context.getExternalFilesDir(null).getAbsolutePath());
 		mDatapath = new File(Voice.getDataStorageBasePath()).getParent();
 		mContext = context;
 		mCallback = callback;
@@ -121,7 +122,7 @@ public class NativeFliteTTS {
 
     }
 
-    private int mNativeData;
+    private long mNativeData;
 	private static native final boolean nativeClassInit();
 	private native final boolean nativeCreate(String path);
     private native final boolean nativeDestroy();

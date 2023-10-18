@@ -1,9 +1,9 @@
 bin/
 libs/
-flite/
 gen/
 obj/
 build.properties
 local.properties
 ant.properties
+src/edu/cmu/cs/speech/tts/flite/R.java
 *~

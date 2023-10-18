@@ -54,8 +54,8 @@ import android.util.Log;
 
 public class CheckVoiceData extends Activity {
 	private final static String LOG_TAG = "Flite_Java_" + CheckVoiceData.class.getSimpleName();
-	private final static String FLITE_DATA_PATH = Voice.getDataStorageBasePath();
-	public final static String VOICE_LIST_FILE = FLITE_DATA_PATH+"cg/voices-20150129.list";
+
+	private static String sVoiceListFile;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,24 +63,26 @@ public class CheckVoiceData extends Activity {
 		int result = TextToSpeech.Engine.CHECK_VOICE_DATA_PASS;
 		Intent returnData = new Intent();
 		returnData.putExtra(TextToSpeech.Engine.EXTRA_VOICE_DATA_ROOT_DIRECTORY,
-				FLITE_DATA_PATH);
+				Voice.getDataStorageBasePath());
 
 		ArrayList<String> available = new ArrayList<String>();
 		ArrayList<String> unavailable = new ArrayList<String>();
+
+		sVoiceListFile = Voice.getDataStorageBasePath() + "cg/voices-20150129.list";
 
 		/* First, make sure that the directory structure we need exists
 		 * There should be a "cg" folder inside the flite data directory
 		 * which will store all the clustergen voice data files.
 		 */
 
-		if(!Utility.pathExists(FLITE_DATA_PATH+"cg")) {
+		if(!Utility.pathExists(Voice.getDataStorageBasePath()+"cg")) {
 			// Create the directory.
 			Log.e(LOG_TAG, "Flite data directory missing. Trying to create it.");
 			boolean success = false;
 
 			try {
-				Log.e(LOG_TAG,FLITE_DATA_PATH);
-				success = new File(FLITE_DATA_PATH+"cg").mkdirs();
+				Log.e(LOG_TAG,Voice.getDataStorageBasePath());
+				success = new File(Voice.getDataStorageBasePath()+"cg").mkdirs();
 			}
 			catch (Exception e) {
 				Log.e(LOG_TAG,"Could not create directory structure. "+e.getMessage());
@@ -100,7 +102,7 @@ public class CheckVoiceData extends Activity {
 		 * if we don't already have a file.
 		 */
 
-		if(!Utility.pathExists(VOICE_LIST_FILE)) {
+		if(!Utility.pathExists(sVoiceListFile)) {
 			Log.e(LOG_TAG, "Voice list file doesn't exist. Try getting it from server.");
 
 			DownloadVoiceList(null);
@@ -110,10 +112,10 @@ public class CheckVoiceData extends Activity {
 		 * possibly because Internet connection was not available, we must create a dummy
 		 *
 		 */
-		if(!Utility.pathExists(VOICE_LIST_FILE)) {
+		if(!Utility.pathExists(sVoiceListFile)) {
 			try {
 				Log.w(LOG_TAG, "Voice list not found, creating dummy list.");
-				BufferedWriter out = new BufferedWriter(new FileWriter(VOICE_LIST_FILE));
+				BufferedWriter out = new BufferedWriter(new FileWriter(sVoiceListFile));
 				out.write("eng-USA-male_rms");
 				out.close();
 			} catch (IOException e) {
@@ -154,7 +156,7 @@ public class CheckVoiceData extends Activity {
 		String voiceListURL = Voice.getDownloadURLBasePath() + "voices.list?q=1";
 
 		FileDownloader fdload = new FileDownloader();
-		fdload.saveUrlAsFile(voiceListURL, VOICE_LIST_FILE);
+		fdload.saveUrlAsFile(voiceListURL, sVoiceListFile);
 		while(!fdload.finished) {}
 		boolean savedVoiceList = fdload.success;
 
@@ -170,9 +172,11 @@ public class CheckVoiceData extends Activity {
 	}
 
 	public static ArrayList<Voice> getVoices() {
+		sVoiceListFile = Voice.getDataStorageBasePath() + "cg/voices-20150129.list";
+
 		ArrayList<String> voiceList = null;
 		try {
-			voiceList = Utility.readLines(VOICE_LIST_FILE);
+			voiceList = Utility.readLines(sVoiceListFile);
 		} catch (IOException e) {
 			// Ignore exception, since we will return empty anyway.
 		}

@@ -52,10 +52,40 @@ endif
 FLITE_BUILD_SUBDIR:=$(TARGET_ARCH_ABI)
 
 ifeq "$(TARGET_ARCH_ABI)" "armeabi-v7a"
-  FLITE_BUILD_SUBDIR:="armeabiv7a"
+  FLITE_BUILD_SUBDIR:=armeabiv7a
+endif
+
+ifeq "${TARGET_ARCH_ABI}" "arm64-v8a"
+	FLITE_BUILD_SUBDIR:=aarch64
 endif
 
 FLITE_LIB_DIR:= $(FLITEDIR)/build/$(FLITE_BUILD_SUBDIR)-android/lib
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libflite-cmu-indic-lex
+LOCAL_SRC_FILES := $(FLITE_LIB_DIR)/libflite_cmu_indic_lex.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libflite-cmu-indic-lang
+LOCAL_SRC_FILES := $(FLITE_LIB_DIR)/libflite_cmu_indic_lang.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libflite-cmulex
+LOCAL_SRC_FILES := $(FLITE_LIB_DIR)/libflite_cmulex.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libflite-usenglish
+LOCAL_SRC_FILES := $(FLITE_LIB_DIR)/libflite_usenglish.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libflite
+LOCAL_SRC_FILES := $(FLITE_LIB_DIR)/libflite.a
+include $(PREBUILT_STATIC_LIBRARY)
+
 ###########################################################################
 
 include $(CLEAR_VARS)
@@ -71,18 +101,19 @@ LOCAL_SRC_FILES := edu_cmu_cs_speech_tts_flite_service.cc \
 
 LOCAL_C_INCLUDES := $(FLITEDIR)/include
 
-LOCAL_LDLIBS:= -llog \
-	$(FLITE_LIB_DIR)/libflite_cmu_indic_lex.a \
-	$(FLITE_LIB_DIR)/libflite_cmu_indic_lang.a \
-	$(FLITE_LIB_DIR)/libflite_cmulex.a \
-	$(FLITE_LIB_DIR)/libflite_usenglish.a \
-	$(FLITE_LIB_DIR)/libflite.a \
+LOCAL_STATIC_LIBRARIES := \
+	libflite \
+	libflite-usenglish \
+	libflite-cmulex \
+	libflite-cmu-indic-lang \
+	libflite-cmu-indic-lex
+
+LOCAL_LDLIBS:= -llog
 
 ifeq ("$(APP_OPTIM)", "debug")
   LOCAL_CFLAGS += -DFLITE_DEBUG_ENABLED=1
 else
   LOCAL_CFLAGS += -DFLITE_DEBUG_ENABLED=0
 endif
-
 
 include $(BUILD_SHARED_LIBRARY)

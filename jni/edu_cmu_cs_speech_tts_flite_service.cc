@@ -146,7 +146,7 @@ extern "C" {
     METHOD_nativeSynthCallback = env->GetMethodID(cls,
                                                   "nativeSynthCallback",
                                                   "([B)V");
-    FIELD_mNativeData = env->GetFieldID(cls, "mNativeData", "I");
+    FIELD_mNativeData = env->GetFieldID(cls, "mNativeData", "J");
 
     return JNI_TRUE;
   }
@@ -165,8 +165,8 @@ extern "C" {
         jni_data->flite_engine_->init(jni_data->flite_engine_,
                                      TtsSynthDoneCallback, path_string);
 
-    env->SetIntField(object, FIELD_mNativeData,
-                     reinterpret_cast<int>(jni_data));
+    env->SetLongField(object, FIELD_mNativeData,
+                     reinterpret_cast<long>(jni_data));
 
     env->ReleaseStringUTFChars(path, path_string);
     return result;
@@ -177,7 +177,7 @@ extern "C" {
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -195,7 +195,7 @@ extern "C" {
     const char *c_country = env->GetStringUTFChars(country, NULL);
     const char *c_variant = env->GetStringUTFChars(variant, NULL);
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -221,7 +221,7 @@ extern "C" {
     const char *c_country = env->GetStringUTFChars(country, NULL);
     const char *c_variant = env->GetStringUTFChars(variant, NULL);
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -246,7 +246,7 @@ extern "C" {
       JNIEnv *env, jobject object, jint rate) {
     DEBUG_LOG_FUNCTION;
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -266,7 +266,7 @@ extern "C" {
       JNIEnv *env, jobject object, jstring text) {
     DEBUG_LOG_FUNCTION;
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -291,7 +291,7 @@ extern "C" {
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
 
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 
@@ -316,7 +316,7 @@ extern "C" {
   JNICALL Java_edu_cmu_cs_speech_tts_flite_NativeFliteTTS_nativeGetSampleRate(
       JNIEnv *env, jobject object) {
     DEBUG_LOG_FUNCTION;
-    int jni_data_address = env->GetIntField(object, FIELD_mNativeData);
+    long jni_data_address = env->GetLongField(object, FIELD_mNativeData);
     SynthJNIData* jni_data = reinterpret_cast<SynthJNIData*>(jni_data_address);
     android_tts_engine_funcs_t* flite_engine = jni_data->flite_engine_;
 

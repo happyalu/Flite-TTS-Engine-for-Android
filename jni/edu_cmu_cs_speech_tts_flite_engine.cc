@@ -382,7 +382,7 @@ android_tts_result_t init(void* engine, android_tts_synth_cb_t synthDoneCBPtr, c
       }
 
     *rate = feat_int(flite_voice->features,"sample_rate");
-    LOGI("TtsEngine::setAudioFormat: setting Rate to %u", (unsigned int) rate);
+    LOGI("TtsEngine::setAudioFormat: setting Rate to %u", (unsigned int)*rate);
 
     *encoding = ANDROID_TTS_AUDIO_FORMAT_PCM_16_BIT;
     *channels = 1;

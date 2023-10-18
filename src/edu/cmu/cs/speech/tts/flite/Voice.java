@@ -52,9 +52,9 @@ import android.util.Log;
 
 public class Voice {
 	private final static String LOG_TAG = "Flite_Java_" + Voice.class.getSimpleName();
-	private final static String FLITE_DATA_PATH = Environment.getExternalStorageDirectory()
-			+ "/flite-data/";
 	private final static String VOICE_BASE_URL = "http://festvox.org/flite/voices/cg/voxdata-v2.0.0/";
+
+	private static String sFliteDataPath;
 
 	private String mVoiceName;
 	private String mVoiceMD5;
@@ -65,11 +65,15 @@ public class Voice {
 	private String mVoicePath;
 	private boolean mIsVoiceAvailable;
 
+	public static void setDataStorageBasePath(String p_path) {
+		sFliteDataPath = p_path + "/flite-data/";
+	}
+
 	/**
 	 * @return absolute path to the flite-data directory
 	 */
 	public static String getDataStorageBasePath() {
-		return FLITE_DATA_PATH;
+		return sFliteDataPath;
 	}
 
 	/**
