@@ -1,66 +1,24 @@
 #!/bin/sh
 FLITE_APP_DIR="$(dirname $(readlink -f "$0"))"
 FLITE_BUILD_DIR="${FLITE_APP_DIR}/flite"
-FLITE_ARCHIVE_URL="http://www.festvox.org/flite/packed/flite-2.0/flite-2.0.0-release.tar.bz2"
-FLITE_ARCHIVE_MD5="645db96ffc296cbb6d37f231cc1cc6b2"
-FLITE_ARCHIVE_NAM="$(basename "${FLITE_ARCHIVE_URL}")"
-FLITE_ARCHIVE_DIR="$(basename "${FLITE_ARCHIVE_URL}" .tar.bz2)"
 
-FLITE_PATCH='
---- flite-2.0.0-release/configure.in	2014-12-09 22:39:01.000000000 +0100
-+++ flite-2.0.0-release.new/configure.in	2016-06-15 12:36:53.543619329 +0200
-@@ -151,16 +151,22 @@
-                 # http://developer.android.com/sdk/ndk/index.html
- 		shared=false
- 
-+		if test -z "${ANDROID_NDK}";
-+		then
-+			ANDROID_NDK="${ANDROID_NDK_HOME}"
-+		fi
-+
- 		# We target our compilation to android-14 (4.0) platform
- 		ANDROID_NDK_PLATFORM_PATH="$ANDROID_NDK/platforms/android-14"
- 
--		ANDROID_GCC_VERSION=4.6
-+		ANDROID_GCC_ARCH="$(uname -m)"
-+		ANDROID_GCC_VERSION=4.9
- 
- 		if test "$target_cpu" = "armeabi" 
-                 then
- 		   ANDROID_TOOLCHAIN="arm-linux-androideabi-$ANDROID_GCC_VERSION"
- 		   ANDROID_NDK_SYSROOT="$ANDROID_NDK_PLATFORM_PATH/arch-arm"
--		   ANDROIDBIN="$ANDROID_NDK/toolchains/arm-linux-androideabi-$ANDROID_GCC_VERSION/prebuilt/linux-x86/bin/arm-linux-androideabi"
-+		   ANDROIDBIN="$ANDROID_NDK/toolchains/arm-linux-androideabi-$ANDROID_GCC_VERSION/prebuilt/linux-$ANDROID_GCC_ARCH/bin/arm-linux-androideabi"
-       		   CFLAGS="$CFLAGS -fpic -mthumb -O3 -DANDROID --sysroot=$ANDROID_NDK_SYSROOT"
-                 fi
- 
-@@ -168,7 +174,7 @@
-                 then
- 		   ANDROID_TOOLCHAIN="arm-linux-androideabi-$ANDROID_GCC_VERSION"
- 		   ANDROID_NDK_SYSROOT="$ANDROID_NDK_PLATFORM_PATH/arch-arm"
--		   ANDROIDBIN="$ANDROID_NDK/toolchains/arm-linux-androideabi-$ANDROID_GCC_VERSION/prebuilt/linux-x86/bin/arm-linux-androideabi"
-+		   ANDROIDBIN="$ANDROID_NDK/toolchains/arm-linux-androideabi-$ANDROID_GCC_VERSION/prebuilt/linux-$ANDROID_GCC_ARCH/bin/arm-linux-androideabi"
-       		   CFLAGS="$CFLAGS -fpic -march=armv7-a -mfloat-abi=softfp -O3 -DANDROID --sysroot=$ANDROID_NDK_SYSROOT"
- 		   LDFLAGS="$LDFLAGS -Wl,--fix-cortex-a8"
-                 fi
-@@ -177,7 +183,7 @@
- 		then
- 		   ANDROID_TOOLCHAIN="x86-$ANDROID_GCC_VERSION"
- 		   ANDROID_NDK_SYSROOT="$ANDROID_NDK_PLATFORM_PATH/arch-x86"
--		   ANDROIDBIN="$ANDROID_NDK/toolchains/x86-$ANDROID_GCC_VERSION/prebuilt/linux-x86/bin/i686-linux-android"
-+		   ANDROIDBIN="$ANDROID_NDK/toolchains/x86-$ANDROID_GCC_VERSION/prebuilt/linux-$ANDROID_GCC_ARCH/bin/i686-linux-android"
-       		   CFLAGS="$CFLAGS -fpic -O3 -DANDROID --sysroot=$ANDROID_NDK_SYSROOT"
- 		fi
- 
-@@ -185,7 +191,7 @@
- 		then
- 		   ANDROID_TOOLCHAIN="mipsel-linux-android-$ANDROID_GCC_VERSION"
- 		   ANDROID_NDK_SYSROOT="$ANDROID_NDK_PLATFORM_PATH/arch-mips"
--		   ANDROIDBIN="$ANDROID_NDK/toolchains/mipsel-linux-android-$ANDROID_GCC_VERSION/prebuilt/linux-x86/bin/mipsel-linux-android"
-+		   ANDROIDBIN="$ANDROID_NDK/toolchains/mipsel-linux-android-$ANDROID_GCC_VERSION/prebuilt/linux-$ANDROID_GCC_ARCH/bin/mipsel-linux-android"
-       		   CFLAGS="$CFLAGS -fpic -O3 -DANDROID --sysroot=$ANDROID_NDK_SYSROOT"
- 		fi
-';
+ANDROID_BUILD_TOOLS=31.0.0
+ANDROID_NDK_VERSION=r23c
+ANDROID_NDK_PLATFORM_VERSION=21
+ANDROID_API_VERSION=33
+ANDROID_MIN_SDK_VERSION=23
+
+ANDROID_PLATFORM_JAR="${ANDROID_SDK}/platforms/android-${ANDROID_API_VERSION}/android.jar"
+
+AAPT="${ANDROID_SDK}/build-tools/${ANDROID_BUILD_TOOLS}/aapt"
+D8="${ANDROID_SDK}/build-tools/${ANDROID_BUILD_TOOLS}/d8"
+APKSIGNER="${ANDROID_SDK}/build-tools/${ANDROID_BUILD_TOOLS}/apksigner"
+ZIPALIGN="${ANDROID_SDK}/build-tools/${ANDROID_BUILD_TOOLS}/zipalign"
+JAVAC=javac
+NDK_BUILD="${ANDROID_NDK}/ndk-build"
+
+UNALIGNED_APK=bin/FliteEngine.unaligned.apk
+ALIGNED_APK=bin/FliteEngine.apk
 
 # Abort after first error
 set -e
@@ -88,43 +46,11 @@ fi
 
 export FLIGHT_APP_DIR
 
-# Download and patch flight, unless it was provided
-if [ -z "${FLITEDIR}" ];
-then
-	# Check if the actual `flight` build directory exists
-	flite_directory="${FLITE_BUILD_DIR}/${FLITE_ARCHIVE_DIR}"
-	if ! [ -d "${flite_directory}" ];
-	then
-		mkdir -p "${FLITE_BUILD_DIR}"
-		
-		flite_archive="${FLITE_BUILD_DIR}/${FLITE_ARCHIVE_NAM}"
-		
-		# Download the `flight` file archive
-		if ! [ -e "${flite_archive}" ];
-		then
-			wget "${FLITE_ARCHIVE_URL}" -O "${flite_archive}"
-		fi
-		
-		# Verify the archive's integrity
-		echo "${FLITE_ARCHIVE_MD5}  ${flite_archive}" | md5sum --check -
-		
-		# Extract the `flight` file archive
-		tar -C "${FLITE_BUILD_DIR}" -xvf "${flite_archive}"
-		
-		# Patch `flight` configure script to work with newer versions of the NDK (10e – 11c tested)
-		cd "${flite_directory}"
-		echo "${FLITE_PATCH}" | patch -p 1
-		autoreconf
-		cd "${OLDPWD}"
-		
-	fi
-	
-	export FLITEDIR="${flite_directory}"
-fi
+export FLITEDIR=${FLITE_BUILD_DIR}
 
-# Build `flight` engine for all supported targets
+# Build `flite` engine for all supported targets
 cd "${FLITEDIR}"
-for arch in armeabi armeabiv7a x86 mips;
+for arch in armeabiv7a aarch64 x86 x86_64;
 do
 	if ! [ -e "${FLITEDIR}/build/${arch}-android/lib/libflite.a" ];
 	then
@@ -134,12 +60,35 @@ do
 done
 cd "${OLDPWD}"
 
-# Build the Android application package
-if [ $# -gt 0 ];
-then
-	action="${1}"
-	shift 1
-else
-	action="debug"
-fi
-ant "${action}" "$@"
+"${NDK_BUILD}" V=1
+
+rm -f ${UNALIGNED_APK}
+rm -f ${ALIGNED_APK}
+rm -f bin/classes.dex
+
+${AAPT} package -f -m -J src -M AndroidManifest.xml -S res -I "${ANDROID_PLATFORM_JAR}"
+
+mkdir -p obj
+mkdir -p bin
+${JAVAC} -d obj -classpath "src" -bootclasspath "${ANDROID_PLATFORM_JAR}" src/edu/cmu/cs/speech/tts/flite/*.java src/edu/cmu/cs/speech/tts/flite/providers/*.java
+
+${D8} --min-api "${ANDROID_MIN_SDK_VERSION}" --lib "${ANDROID_PLATFORM_JAR}" --output bin/ obj/edu/cmu/cs/speech/tts/flite/*.class obj/edu/cmu/cs/speech/tts/flite/providers/*.class
+
+${AAPT} package -f -m -F ${UNALIGNED_APK} -M AndroidManifest.xml -S res -I "${ANDROID_PLATFORM_JAR}" 
+cd bin
+${AAPT} add ../${UNALIGNED_APK} classes.dex
+cd ..
+mv libs lib
+${AAPT} add ${UNALIGNED_APK} lib/armeabi-v7a/*
+${AAPT} add ${UNALIGNED_APK} lib/arm64-v8a/*
+${AAPT} add ${UNALIGNED_APK} lib/x86_64/*
+${AAPT} add ${UNALIGNED_APK} lib/x86/*
+mv lib libs
+
+
+rm -f bin/debug.keystore
+keytool -genkey -v -keystore bin/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -storetype PKCS12 -dname "CN=Android Debug,O=Android,C=US"
+
+${ZIPALIGN} -f 4 ${UNALIGNED_APK} ${ALIGNED_APK}
+
+${APKSIGNER} sign --ks bin/debug.keystore --ks-pass pass:android --key-pass pass:android ${ALIGNED_APK}
